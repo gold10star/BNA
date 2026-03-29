@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BNA Reconciliation</title>
+<title>BNA Auto Reconciliation</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -12,7 +12,7 @@
   --border:#2a2d2a;--border2:#363a36;
   --accent:#00c896;--accent-dim:#00c89615;--accent2:#4db8ff;
   --text:#e2e8e2;--muted:#5a6060;--muted2:#2e3330;
-  --warn:#f0a500;--danger:#ff5555;--success:#00c896;
+  --warn:#f0a500;--danger:#ff5555;
   --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
   --radius:8px
 }
@@ -20,42 +20,62 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .wrap{max-width:720px;margin:0 auto;padding:0 16px}
 
 /* Header */
-.header{padding:24px 0 20px;border-bottom:1px solid var(--border);margin-bottom:24px}
-.header-title{font-size:24px;font-weight:300;letter-spacing:-0.5px}
+.header{padding:24px 0 16px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.header-title{font-size:22px;font-weight:300;letter-spacing:-0.5px}
 .header-title span{font-weight:600}
-.header-sub{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:0.1em}
+
+/* Instructions */
+.instructions{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+.inst-toggle{width:100%;background:none;border:none;color:var(--text);font-family:var(--sans);font-size:13px;font-weight:500;padding:14px 16px;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.inst-toggle:hover{background:var(--surface2)}
+.inst-arrow{font-size:11px;color:var(--muted);transition:transform 0.2s}
+.inst-arrow.open{transform:rotate(180deg)}
+.inst-body{display:none;padding:0 16px 16px;border-top:1px solid var(--border)}
+.inst-body.open{display:block}
+.inst-section{margin-top:14px}
+.inst-section h4{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.inst-section p,.inst-section li{font-size:13px;color:var(--muted);line-height:1.7}
+.inst-section ul{padding-left:16px}
+.inst-badge{display:inline-block;font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:4px;margin-right:4px}
+.badge-bna{background:#0a1f14;color:#00c896;border:1px solid #1a5c32}
+.badge-atm{background:#0a0f1f;color:#4db8ff;border:1px solid #1a325c}
 
 /* Card */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
 .card-title{font-family:var(--mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:10px}
 .card-title::after{content:'';flex:1;height:1px;background:var(--border)}
 
+/* Machine badge */
+.machine-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:20px;margin-bottom:12px}
+.machine-badge.bna{background:#0a1f14;color:#00c896;border:1px solid #1a5c32}
+.machine-badge.atm{background:#0a0f1f;color:#4db8ff;border:1px solid #1a325c}
+.machine-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
 /* Upload */
-.upload-zone{border:1px dashed var(--border2);border-radius:var(--radius);padding:36px 20px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;position:relative;background:var(--surface)}
+.upload-zone{border:1px dashed var(--border2);border-radius:var(--radius);padding:32px 20px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;position:relative;background:var(--surface)}
 .upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:var(--accent-dim)}
 .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.upload-icon{font-size:28px;margin-bottom:10px}
+.upload-icon{font-size:26px;margin-bottom:10px}
 .upload-title{font-size:15px;font-weight:400;margin-bottom:4px}
 .upload-sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
 
 /* Preview */
 .preview-row{display:none;gap:14px;align-items:flex-start}
 .preview-row.show{display:flex}
-.preview-thumb{width:90px;min-width:90px;height:115px;object-fit:cover;border-radius:6px;border:1px solid var(--border)}
+.preview-thumb{width:88px;min-width:88px;height:112px;object-fit:cover;border-radius:6px;border:1px solid var(--border)}
 .preview-meta{flex:1;min-width:0}
-.preview-name{font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.preview-hint{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+.preview-name{font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.preview-hint{font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5}
 
 /* Fields */
 .fields-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
 .field{display:flex;flex-direction:column;gap:5px}
 .field label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)}
-.field input,.field select{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border-color 0.2s;width:100%}
-.field input:focus,.field select:focus{border-color:var(--accent)}
-.field input::placeholder{color:var(--muted2)}
+.field input{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border-color 0.2s;width:100%}
+.field input:focus{border-color:var(--accent)}
 
 /* Buttons */
-.btn{background:var(--accent);color:#000;border:none;border-radius:6px;padding:12px 20px;font-family:var(--mono);font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.04em;transition:opacity 0.15s,transform 0.1s;white-space:nowrap}
+.btn{background:var(--accent);color:#000;border:none;border-radius:6px;padding:12px 20px;font-family:var(--mono);font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.04em;transition:opacity 0.15s,transform 0.1s}
 .btn:hover{opacity:0.88}
 .btn:active{transform:scale(0.98)}
 .btn:disabled{opacity:0.35;cursor:not-allowed}
@@ -63,10 +83,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .btn-outline{background:transparent;color:var(--accent);border:1px solid var(--accent)}
 .btn-outline:hover{background:var(--accent-dim)}
 .btn-sm{padding:7px 14px;font-size:11px}
-.btn-danger{background:var(--danger);color:#fff}
 
 /* Processing */
-.processing{display:none;text-align:center;padding:36px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px}
+.processing{display:none;text-align:center;padding:32px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px}
 .processing.show{display:block}
 .spinner{width:30px;height:30px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -90,44 +109,41 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 /* Result */
 .result-wrap{display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
 .result-wrap.show{display:block}
-.result-header{background:var(--surface2);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.result-header{background:var(--surface2);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .result-date{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent)}
 .result-ref{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
 
 /* Table */
 .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.reg-table{width:100%;border-collapse:collapse;min-width:500px}
+.reg-table{width:100%;border-collapse:collapse;min-width:400px}
 .reg-table th{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-align:right;padding:10px 12px 8px;border-bottom:1px solid var(--border);font-weight:400;white-space:nowrap}
 .reg-table th:first-child{text-align:left}
-.reg-table td{font-family:var(--mono);font-size:12px;text-align:right;padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+.reg-table td{font-family:var(--mono);font-size:12px;text-align:right;padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text)}
 .reg-table td:first-child{text-align:left;font-weight:500;color:var(--accent2)}
 .reg-table tbody tr:last-child td{border-bottom:none}
 .reg-table .total-row td{font-weight:600;background:var(--surface2);border-top:1px solid var(--border2);border-bottom:none}
 .reg-table .total-row td:first-child{color:var(--muted);font-size:10px;letter-spacing:0.08em;text-transform:uppercase}
-.editable{cursor:text;border-bottom:1px dashed var(--border2);outline:none;min-width:30px;display:inline-block}
-.editable:focus{background:var(--muted2);border-bottom:1px solid var(--accent);border-radius:2px;padding:1px 4px}
+.editable{cursor:text;border-bottom:1px dashed var(--border2);outline:none;min-width:30px;display:inline-block;padding:1px 2px}
+.editable:focus{background:var(--muted2);border-bottom:1px solid var(--accent);border-radius:2px}
 
-/* Brought back */
-.brought-back{padding:16px;border-top:1px solid var(--border)}
-.warn-tip{font-family:var(--mono);font-size:9px;color:var(--warn);margin-bottom:12px;letter-spacing:0.06em}
+/* Brought back / Physical Balance */
+.brought-back{padding:14px 16px;border-top:1px solid var(--border)}
+.warn-tip{font-family:var(--mono);font-size:9px;color:var(--warn);margin-bottom:10px;letter-spacing:0.06em}
 .bb-calc{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:2.2}
 .bb-calc .eq{color:var(--text)}
 .bb-divider{color:var(--border2)}
-.bb-final{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:2px solid var(--border2);flex-wrap:wrap;gap:10px}
+.bb-final{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:2px solid var(--border2);flex-wrap:wrap;gap:10px}
 .bb-label{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)}
 .bb-note{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:3px}
 .bb-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-.bb-value{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--accent);letter-spacing:-1px}
+.bb-value{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--accent);letter-spacing:-1px}
 
-/* Switch & GL Section */
+/* Switch & GL */
 .balances-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;display:none}
 .balances-card.show{display:block}
-.bal-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-.bal-btn{margin-bottom:16px}
-
-/* Traffic Light Results */
+.bal-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
 .traffic-grid{display:flex;flex-direction:column;gap:10px}
-.traffic-item{border-radius:8px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.traffic-item{border-radius:8px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .traffic-item.green{background:#0a1f14;border:1px solid #1a5c32}
 .traffic-item.red{background:#1f0a0a;border:1px solid #5c1a1a}
 .traffic-item.amber{background:#1f160a;border:1px solid #5c3d1a}
@@ -147,98 +163,135 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 /* Error */
 .error-box{display:none;background:#180b0b;border:1px solid #3d1515;border-radius:var(--radius);padding:14px 16px;font-family:var(--mono);font-size:11px;color:var(--danger);line-height:1.7;white-space:pre-wrap;margin-bottom:16px}
 .error-box.show{display:block}
-
-/* Reset */
 .reset-bar{display:none;margin-bottom:16px}
 .reset-bar.show{display:block}
 
-/* Print */
+/* ── PRINT ── */
 @media print{
-  @page { size: A4 landscape; margin: 10mm; }
-  body{background:#fff;color:#000;padding:0;font-size:11px}
-  /* Hide non-print elements */
-  .upload-zone,.preview-row,.processing,.error-box,.reset-bar,
-  .modal-overlay,.warn-tip,.bal-btn,.result-header .btn-outline,
-  .bb-right .btn-outline,.balances-card .field,.balances-card .bal-inputs,
-  .header{display:none!important}
-  /* Show results */
-  .result-wrap,.balances-card{display:block!important;border:1px solid #ccc;box-shadow:none;margin-bottom:6mm}
-  /* Print header */
-  .print-header{display:block!important;text-align:center;margin-bottom:6mm;border-bottom:2px solid #000;padding-bottom:4mm}
-  .print-header h1{font-size:16px;font-weight:700;letter-spacing:0.05em;font-family:sans-serif}
-  .print-header p{font-size:10px;color:#555;margin-top:2px;font-family:monospace}
-  /* Layout: image left, table right */
-  .print-body{display:flex!important;gap:6mm;align-items:flex-start}
-  .print-img-wrap{display:block!important;width:55mm;flex-shrink:0}
-  .print-img-wrap img{width:100%;border:1px solid #ccc;border-radius:4px}
-  .print-content{flex:1;min-width:0}
-  /* Table */
-  .result-header{background:#f0f0f0!important;padding:6px 10px}
-  .result-date{color:#000!important;font-size:12px}
+  @page{size:A4 landscape;margin:8mm}
+  body{background:#fff;color:#000;padding:0;font-size:10px}
+  .instructions,.upload-zone,.preview-row,.processing,.error-box,
+  .reset-bar,.modal-overlay,.warn-tip,.bal-btn,
+  .result-header .btn-outline,.bb-right .btn-outline,
+  .balances-card .field,.balances-card .bal-inputs,.header{display:none!important}
+  .result-wrap,.balances-card{display:block!important;border:1px solid #bbb;margin-bottom:4mm}
+  /* Print layout */
+  .print-only{display:block!important}
+  .print-header{text-align:center;border-bottom:2px solid #000;padding-bottom:3mm;margin-bottom:4mm}
+  .print-header h1{font-size:14px;font-weight:700;font-family:sans-serif;letter-spacing:0.05em}
+  .print-header p{font-size:9px;color:#555;margin-top:2px;font-family:monospace}
+  .print-layout{display:flex!important;gap:5mm;align-items:flex-start}
+  .print-img-col{width:50mm;flex-shrink:0}
+  .print-img-col img{width:100%;border:1px solid #ccc;border-radius:3px}
+  .print-data-col{flex:1;min-width:0}
+  .result-header{background:#f0f0f0!important;padding:5px 8px}
+  .result-date{color:#000!important;font-size:11px}
   .result-ref{color:#555!important}
-  .reg-table th,.reg-table td{color:#000!important;border-color:#ccc!important;background:#fff!important;padding:5px 8px;font-size:10px}
+  .reg-table th,.reg-table td{color:#000!important;border-color:#ccc!important;background:#fff!important;padding:4px 7px;font-size:9px}
   .reg-table .total-row td{background:#f0f0f0!important;font-weight:700}
   .table-wrap{overflow:visible!important}
   .reg-table{min-width:unset!important}
-  /* Brought back */
-  .bb-value{color:#000!important;font-size:14px!important}
-  .bb-calc{font-size:10px!important}
-  .brought-back{padding:8px 10px}
-  /* Traffic lights */
-  .traffic-grid{flex-direction:row!important;flex-wrap:wrap;gap:4mm}
-  .traffic-item{flex:1;min-width:40mm;border:1px solid #ccc!important;background:#fff!important;padding:6px 10px}
-  .traffic-label{color:#000!important;font-size:9px}
-  .traffic-value{color:#000!important;font-size:13px}
-  .traffic-badge{color:#fff!important;font-size:9px;padding:2px 6px}
-  .traffic-item.green .traffic-badge{background:#1a7a3a!important}
-  .traffic-item.red .traffic-badge{background:#a00!important}
-  .traffic-item.amber .traffic-badge{background:#a05000!important}
-  .balances-card{padding:10px}
-  .card-title{font-size:9px;margin-bottom:8px}
+  .bb-value{color:#000!important;font-size:13px!important}
+  .bb-calc{font-size:9px!important}
+  .brought-back{padding:6px 8px}
+  .machine-badge{border:1px solid #999!important;color:#000!important;background:#eee!important}
+  .traffic-grid{flex-direction:row!important;flex-wrap:wrap;gap:3mm}
+  .traffic-item{flex:1;min-width:38mm;border:1px solid #ccc!important;background:#fff!important;padding:5px 8px}
+  .traffic-label,.traffic-value{color:#000!important}
+  .traffic-badge{font-size:8px!important}
+  .traffic-item.green .traffic-badge{background:#1a7a3a!important;color:#fff!important}
+  .traffic-item.red .traffic-badge{background:#a00!important;color:#fff!important}
+  .traffic-item.amber .traffic-badge{background:#a05000!important;color:#fff!important}
+  .balances-card{padding:8px}
+  .card-title{font-size:8px;margin-bottom:6px}
 }
 
 /* Mobile */
-@media(max-width:480px){
-  .header-title{font-size:20px}
+@media(max-width:500px){
+  .header-title{font-size:19px}
   .preview-row{flex-direction:column}
-  .preview-thumb{width:100%;height:160px;min-width:unset}
-  .bb-value{font-size:20px}
+  .preview-thumb{width:100%;height:150px;min-width:unset}
+  .bb-value{font-size:19px}
   .modal{padding:18px}
   .bal-inputs{grid-template-columns:1fr}
-  .traffic-item{flex-direction:column;align-items:flex-start}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- Header -->
-  <!-- Print-only header -->
-  <div class="print-header" style="display:none">
-    <h1>BNA AUTO RECONCILIATION APP</h1>
-    <p id="printMeta"></p>
+  <!-- Print-only elements -->
+  <div class="print-only" style="display:none">
+    <div class="print-header">
+      <h1>BNA AUTO RECONCILIATION APP</h1>
+      <p id="printMeta"></p>
+    </div>
+    <div class="print-layout">
+      <div class="print-img-col">
+        <img id="printReceiptImg" src="" alt="Host Total Receipt">
+      </div>
+      <div class="print-data-col" id="printDataCol"></div>
+    </div>
   </div>
 
+  <!-- Header -->
   <div class="header">
-    <div class="header-title">BNA <span>Reconciliation</span></div>
+    <div class="header-title">BNA <span>Auto Reconciliation</span></div>
+  </div>
 
+  <!-- Instructions -->
+  <div class="instructions">
+    <button class="inst-toggle" onclick="toggleInstructions()">
+      <span>📋 &nbsp;How to use this app</span>
+      <span class="inst-arrow" id="instArrow">▼</span>
+    </button>
+    <div class="inst-body" id="instBody">
+      <div class="inst-section">
+        <h4>Step 1 — Upload</h4>
+        <p>Take a clear photo of the Host Total Receipt from the ATM/BNA machine and upload it.</p>
+      </div>
+      <div class="inst-section">
+        <h4>Step 2 — Machine Detection</h4>
+        <p>The app automatically detects the machine type from the ATM ID on the receipt:</p>
+        <ul>
+          <li><span class="inst-badge badge-bna">BNA</span> IOBC prefix — Cash Recycler (deposit + dispense)</li>
+          <li><span class="inst-badge badge-atm">ATM</span> IOBD prefix — ATM (dispense only)</li>
+        </ul>
+      </div>
+      <div class="inst-section">
+        <h4>Step 3 — Excess Notes (BNA only)</h4>
+        <p>If any excess notes were found physically, enter the count per denomination before scanning.</p>
+      </div>
+      <div class="inst-section">
+        <h4>Step 4 — Loading Details</h4>
+        <p>After scanning, enter the notes loaded into each cassette today.</p>
+      </div>
+      <div class="inst-section">
+        <h4>Step 5 — Edit & Recalculate</h4>
+        <p>Tap any value in the table to correct it. Remaining auto-adjusts as you type. Tap Recalculate to refresh totals.</p>
+      </div>
+      <div class="inst-section">
+        <h4>Step 6 — Switch & GL Balances</h4>
+        <p>Enter Switch and GL balances to see Physical vs GL and Physical vs Switch differences with traffic light indicators.</p>
+      </div>
+    </div>
   </div>
 
   <!-- Upload Card -->
   <div class="card">
-    <div class="card-title">Receipt Image</div>
+    <div class="card-title">Upload Host Total Receipt</div>
     <div class="upload-zone" id="uploadZone">
       <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])">
-      <div class="upload-icon">📄</div>
-      <div class="upload-title">Tap to upload receipt</div>
+      <div class="upload-icon">🧾</div>
+      <div class="upload-title">Tap to upload Host Total Receipt</div>
       <div class="upload-sub">JPG · PNG · WEBP — camera or gallery</div>
     </div>
     <div class="preview-row" id="previewRow">
       <img class="preview-thumb" id="previewImg" src="" alt="">
       <div class="preview-meta">
         <div class="preview-name" id="previewName"></div>
-        <div class="preview-hint">Enter excess notes if any, then tap Scan.</div>
-        <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Excess Notes</div>
+        <div class="preview-hint">Enter excess notes if any (BNA only), then tap Scan.</div>
+        <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Excess Notes (BNA only)</div>
         <div class="fields-grid" style="margin-bottom:14px">
           <div class="field"><label>₹100</label><input type="number" id="excess100" placeholder="0" min="0" value="0"></div>
           <div class="field"><label>₹500</label><input type="number" id="excess500" placeholder="0" min="0" value="0"></div>
@@ -253,48 +306,33 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   <div class="processing" id="processing">
     <div class="spinner"></div>
     <div class="proc-label">Reading receipt...</div>
-    <div class="proc-step" id="procStep">Extracting cassette data</div>
+    <div class="proc-step" id="procStep">Detecting machine type</div>
   </div>
 
   <!-- Error -->
   <div class="error-box" id="errorBox"></div>
 
-  <!-- Print body layout -->
-  <div class="print-body" style="display:none" id="printBody">
-    <div class="print-img-wrap" id="printImgWrap">
-      <img id="printReceiptImg" src="" alt="Receipt">
-    </div>
-    <div class="print-content" id="printContent"></div>
-  </div>
-
-  <!-- Result Table -->
+  <!-- Result -->
   <div class="result-wrap" id="resultWrap">
     <div class="result-header">
       <div>
-        <div class="result-date" id="resultDate">BNA — DD/MM/YY</div>
+        <div class="result-date" id="resultDate">—</div>
         <div class="result-ref" id="resultRef"></div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="doPrint()">🖨 Print</button>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="machine-badge" id="machineBadge"><span class="machine-dot"></span><span id="machineLabel">—</span></div>
+        <button class="btn btn-outline btn-sm" onclick="doPrint()">🖨 Print</button>
+      </div>
     </div>
     <div class="table-wrap">
-      <table class="reg-table">
-        <thead>
-          <tr>
-            <th>Denom</th><th>Opening</th><th>Deposited</th><th>Dispensed</th><th>Remaining</th><th>Excess</th><th>Loading</th>
-          </tr>
-        </thead>
+      <table class="reg-table" id="regTable">
+        <thead id="tableHead"></thead>
         <tbody id="tableBody"></tbody>
-        <tfoot>
-          <tr class="total-row">
-            <td>Totals</td>
-            <td id="tOpening"></td><td id="tDep"></td><td id="tDis"></td>
-            <td id="tRem"></td><td id="tEx"></td><td id="tLoading"></td>
-          </tr>
-        </tfoot>
+        <tfoot id="tableFoot"></tfoot>
       </table>
     </div>
     <div class="brought-back">
-      <div class="warn-tip">⚠ Tap any value to edit · tap Recalculate after editing</div>
+      <div class="warn-tip">⚠ Tap any value to edit — Remaining auto-adjusts live · tap Recalculate to refresh totals</div>
       <div class="bb-calc" id="bbCalc"></div>
       <div class="bb-final">
         <div>
@@ -309,14 +347,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     </div>
   </div>
 
-  <!-- Switch & GL Balances -->
+  <!-- Switch & GL -->
   <div class="balances-card" id="balancesCard">
     <div class="card-title">Switch &amp; GL Balances</div>
     <div class="bal-inputs">
       <div class="field"><label>Switch Balance (₹)</label><input type="number" id="switchBal" placeholder="e.g. 997900" min="0"></div>
       <div class="field"><label>GL Balance (₹)</label><input type="number" id="glBal" placeholder="e.g. 997900" min="0"></div>
     </div>
-    <div class="bal-btn">
+    <div class="bal-btn" style="margin-bottom:14px">
       <button class="btn btn-block" onclick="calcBalances()">Calculate Differences</button>
     </div>
     <div class="traffic-grid" id="trafficGrid" style="display:none"></div>
@@ -334,21 +372,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   <div class="modal">
     <div class="modal-title">Loading Details</div>
     <div class="modal-sub">Enter notes loaded into each cassette today.<br>Leave 0 if not loaded.</div>
-    <div class="modal-field">
-      <span class="denom-tag">₹100</span>
-      <label>Notes</label>
-      <input type="number" id="load100" placeholder="0" min="0" value="0">
-    </div>
-    <div class="modal-field">
-      <span class="denom-tag">₹500</span>
-      <label>Notes</label>
-      <input type="number" id="load500" placeholder="0" min="0" value="0">
-    </div>
-    <div class="modal-field">
-      <span class="denom-tag">₹200</span>
-      <label>Notes</label>
-      <input type="number" id="load200" placeholder="0" min="0" value="0">
-    </div>
+    <div class="modal-field"><span class="denom-tag">₹100</span><label>Notes</label><input type="number" id="load100" placeholder="0" min="0" value="0"></div>
+    <div class="modal-field"><span class="denom-tag">₹500</span><label>Notes</label><input type="number" id="load500" placeholder="0" min="0" value="0"></div>
+    <div class="modal-field"><span class="denom-tag">₹200</span><label>Notes</label><input type="number" id="load200" placeholder="0" min="0" value="0"></div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="skipLoading()">Skip</button>
       <button class="btn" onclick="confirmLoading()">Confirm</button>
@@ -357,27 +383,31 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 </div>
 
 <script>
+// ── State ──
 let imageBase64 = '', imageMime = 'image/jpeg';
-let pendingData = null, pendingEx = {};
+let pendingData = null, pendingEx = {}, currentMachineType = 'BNA';
 let currentBroughtBack = 0;
+
+// ── Instructions toggle ──
+function toggleInstructions() {
+  const body = document.getElementById('instBody');
+  const arrow = document.getElementById('instArrow');
+  const open = body.classList.toggle('open');
+  arrow.classList.toggle('open', open);
+}
 
 // ── Drag & Drop ──
 const zone = document.getElementById('uploadZone');
 zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
 zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
-zone.addEventListener('drop', e => {
-  e.preventDefault(); zone.classList.remove('drag');
-  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-});
+zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
 
+// ── File handling with compression ──
 function handleFile(file) {
   if (!file) return;
-  // Compress image before storing — mobile photos can be 5-10MB
-  // Mobile photos can be 8MB+ — compress aggressively
   const maxPx = window.innerWidth < 768 ? 800 : 1000;
   compressImage(file, maxPx, 0.72).then(({ base64, mime }) => {
-    imageBase64 = base64;
-    imageMime = mime;
+    imageBase64 = base64; imageMime = mime;
     document.getElementById('previewImg').src = `data:${mime};base64,${base64}`;
     document.getElementById('previewName').textContent = file.name;
     document.getElementById('uploadZone').style.display = 'none';
@@ -387,7 +417,6 @@ function handleFile(file) {
   });
 }
 
-// Compress image to max width/height, return base64 + mime
 function compressImage(file, maxSize, quality) {
   return new Promise(resolve => {
     const reader = new FileReader();
@@ -397,21 +426,16 @@ function compressImage(file, maxSize, quality) {
         let w = img.width, h = img.height;
         if (w > maxSize || h > maxSize) {
           if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
-          else       { w = Math.round(w * maxSize / h); h = maxSize; }
+          else { w = Math.round(w * maxSize / h); h = maxSize; }
         }
         const canvas = document.createElement('canvas');
         canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext('2d');
-        // White background before drawing (avoids transparency issues)
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, w, h);
         ctx.drawImage(img, 0, 0, w, h);
         const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        const base64 = dataUrl.split(',')[1];
-        // Log size for debugging
-        const sizeKB = Math.round(base64.length * 0.75 / 1024);
-        console.log(`Compressed image: ${w}x${h}, ~${sizeKB}KB`);
-        resolve({ base64, mime: 'image/jpeg' });
+        resolve({ base64: dataUrl.split(',')[1], mime: 'image/jpeg' });
       };
       img.src = e.target.result;
     };
@@ -422,56 +446,41 @@ function compressImage(file, maxSize, quality) {
 // ── Scan ──
 async function scanReceipt() {
   if (!imageBase64) { showError('Please upload a receipt image first.'); return; }
-
   pendingEx = {
     ex100: parseInt(document.getElementById('excess100').value) || 0,
     ex500: parseInt(document.getElementById('excess500').value) || 0,
     ex200: parseInt(document.getElementById('excess200').value) || 0
   };
-
   show('processing'); hide('resultWrap'); hide('resetBar'); hide('errorBox');
   document.getElementById('balancesCard').classList.remove('show');
   document.getElementById('scanBtn').disabled = true;
 
-  const steps = ['Extracting cassette data...','Reading denominations...','Identifying values...','Almost done...'];
+  const steps = ['Detecting machine type...','Reading denominations...','Extracting values...','Almost done...'];
   let si = 0;
   const stepEl = document.getElementById('procStep');
   const timer = setInterval(() => { si=(si+1)%steps.length; stepEl.textContent=steps[si]; }, 900);
 
   try {
-    // Call our Vercel backend proxy — key is safe on server
     const res = await fetch('/api/scan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ imageBase64, imageMime })
     });
-
     clearInterval(timer);
-
-    // Check if response is JSON (Vercel body limit errors return HTML)
     const ct = res.headers.get('content-type') || '';
-    if (!ct.includes('application/json')) {
-      throw new Error('Image too large — please try a closer/clearer photo (Status ' + res.status + ')');
-    }
-
+    if (!ct.includes('application/json')) throw new Error('Image too large or server error (' + res.status + '). Try a clearer photo.');
     const data = await res.json();
-
     if (!res.ok) {
-      // Rate limit
-      if (res.status === 429 || JSON.stringify(data).toLowerCase().includes('rate')) {
-        throw new Error('Rate limit reached. Please wait 60 seconds and try again.');
-      }
+      if (res.status === 429 || JSON.stringify(data).toLowerCase().includes('rate')) throw new Error('Rate limit. Please wait 60 seconds and retry.');
       throw new Error(data.error || 'Server error ' + res.status);
     }
-
     pendingData = data;
     hide('processing');
     showLoadingModal();
-
   } catch (err) {
     clearInterval(timer);
     hide('processing');
-    showError('⚠ ' + (err.message || 'Unknown error occurred.'));
+    showError('⚠ ' + (err.message || 'Unknown error'));
     document.getElementById('scanBtn').disabled = false;
   }
 }
@@ -482,165 +491,237 @@ function showLoadingModal() {
   document.getElementById('loadingModal').classList.add('show');
   document.getElementById('load500').focus();
 }
-
 function confirmLoading() {
-  const l100 = parseInt(document.getElementById('load100').value) || 0;
-  const l500 = parseInt(document.getElementById('load500').value) || 0;
-  const l200 = parseInt(document.getElementById('load200').value) || 0;
+  const l = { l100: +document.getElementById('load100').value||0, l500: +document.getElementById('load500').value||0, l200: +document.getElementById('load200').value||0 };
   document.getElementById('loadingModal').classList.remove('show');
-  renderResult(pendingData, pendingEx, l100, l500, l200);
+  renderResult(pendingData, pendingEx, l);
 }
-
 function skipLoading() {
   document.getElementById('loadingModal').classList.remove('show');
-  renderResult(pendingData, pendingEx, 0, 0, 0);
+  renderResult(pendingData, pendingEx, { l100:0, l500:0, l200:0 });
 }
 
 // ── Render ──
-function renderResult(data, ex, l100, l500, l200) {
-  const t2 = data.type2 || {}, t3 = data.type3 || {}, t4 = data.type4 || {};
+function renderResult(data, ex, loading) {
+  const mt = (data.machine_type || 'BNA').toUpperCase();
+  currentMachineType = mt;
+  const isBNA = mt === 'BNA';
 
-  const rows = [
-    { label:'₹100', denom:100, opening:t2.loaded||0, dep:t2.deposited||0, dis:t2.dispensed||0, rem:t2.remaining||0, ex:ex.ex100, loading:l100 },
-    { label:'₹500', denom:500, opening:t3.loaded||0, dep:t3.deposited||0, dis:t3.dispensed||0, rem:t3.remaining||0, ex:ex.ex500, loading:l500 },
-    { label:'₹200', denom:200, opening:t4.loaded||0, dep:t4.deposited||0, dis:t4.dispensed||0, rem:t4.remaining||0, ex:ex.ex200, loading:l200 }
-  ];
+  // Machine badge
+  const badge = document.getElementById('machineBadge');
+  badge.className = 'machine-badge ' + (isBNA ? 'bna' : 'atm');
+  document.getElementById('machineLabel').textContent = isBNA ? 'BNA — Cash Recycler' : 'ATM — Dispense Only';
 
-  const tOpening = rows.reduce((s,r) => s + r.opening * r.denom, 0);
-  const tDep     = rows.reduce((s,r) => s + r.dep     * r.denom, 0);
-  const tDis     = rows.reduce((s,r) => s + r.dis     * r.denom, 0);
-  const tRem     = rows.reduce((s,r) => s + r.rem     * r.denom, 0);
-  const tEx      = rows.reduce((s,r) => s + r.ex      * r.denom, 0);
-  const tLoading = rows.reduce((s,r) => s + r.loading * r.denom, 0);
-
+  // Header
   const dateStr = 'BNA — ' + fmtDate(data.date||'');
-  const refStr  = `ATM: ${data.atm_id||'IOBC1689'} · REF: ${data.ref_no||'—'}`;
+  const refStr  = `ATM: ${data.atm_id||'—'} · REF: ${data.ref_no||'—'}`;
   document.getElementById('resultDate').textContent = dateStr;
   document.getElementById('resultRef').textContent  = refStr;
-  // Update print header meta
-  document.getElementById('printMeta').textContent = `${refStr} · ${dateStr}`;
-  // Set receipt image for print
-  document.getElementById('printReceiptImg').src = document.getElementById('previewImg').src;
+  document.getElementById('printMeta').textContent  = `${refStr} · ${dateStr}`;
+  document.getElementById('printReceiptImg').src    = document.getElementById('previewImg').src;
 
-  // Editable cells — use data-raw for reliable recalculate
-  document.getElementById('tableBody').innerHTML = rows.map(r => `
-    <tr data-denom="${r.denom}">
-      <td>${r.label}</td>
-      <td><span class="editable" contenteditable="true" data-field="opening" data-raw="${r.opening}">${r.opening}</span></td>
-      <td><span class="editable" contenteditable="true" data-field="dep"     data-raw="${r.dep}">${r.dep}</span></td>
-      <td><span class="editable" contenteditable="true" data-field="dis"     data-raw="${r.dis}">${r.dis}</span></td>
-      <td><span class="editable" contenteditable="true" data-field="rem"     data-raw="${r.rem}">${r.rem}</span></td>
-      <td><span class="editable" contenteditable="true" data-field="ex"      data-raw="${r.ex}">${r.ex}</span></td>
-      <td>${r.loading}</td>
-    </tr>`).join('');
+  let rows;
+  if (isBNA) {
+    // BNA: Type1=nil, Type2=₹100, Type3=₹500, Type4=₹200
+    rows = [
+      { label:'₹100', denom:100, t:data.type2||{}, ex:ex.ex100, loading:loading.l100 },
+      { label:'₹500', denom:500, t:data.type3||{}, ex:ex.ex500, loading:loading.l500 },
+      { label:'₹200', denom:200, t:data.type4||{}, ex:ex.ex200, loading:loading.l200 }
+    ].map(r => ({
+      ...r,
+      opening: r.t.loaded||0,
+      dep: r.t.deposited||0,
+      dis: r.t.dispensed||0,
+      rem: r.t.remaining||0
+    }));
 
-  document.getElementById('tOpening').textContent = fmt(tOpening);
-  document.getElementById('tDep').textContent     = fmt(tDep);
-  document.getElementById('tDis').textContent     = fmt(tDis);
-  document.getElementById('tRem').textContent     = fmt(tRem);
-  document.getElementById('tEx').textContent      = fmt(tEx);
-  document.getElementById('tLoading').textContent = fmt(tLoading);
+    // BNA Table header
+    document.getElementById('tableHead').innerHTML = `<tr>
+      <th>Denom</th><th>Opening</th><th>Deposited</th><th>Dispensed</th><th>Remaining</th><th>Excess</th><th>Loading</th>
+    </tr>`;
 
-  updateBB(tRem, tEx);
-  show('resultWrap');
-  show('resetBar');
+    document.getElementById('tableBody').innerHTML = rows.map((r,i) => `
+      <tr data-denom="${r.denom}" data-idx="${i}" data-machine="BNA">
+        <td>${r.label}</td>
+        <td><span class="editable" contenteditable="true" data-field="opening">${r.opening}</span></td>
+        <td><span class="editable" contenteditable="true" data-field="dep" oninput="autoAdjustRem(this)">${r.dep}</span></td>
+        <td><span class="editable" contenteditable="true" data-field="dis" oninput="autoAdjustRem(this)">${r.dis}</span></td>
+        <td><span class="editable" contenteditable="true" data-field="rem">${r.rem}</span></td>
+        <td><span class="editable" contenteditable="true" data-field="ex">${r.ex}</span></td>
+        <td>${r.loading}</td>
+      </tr>`).join('');
+
+    const tOpening = rows.reduce((s,r) => s + r.opening * r.denom, 0);
+    const tDep     = rows.reduce((s,r) => s + r.dep     * r.denom, 0);
+    const tDis     = rows.reduce((s,r) => s + r.dis     * r.denom, 0);
+    const tRem     = rows.reduce((s,r) => s + r.rem     * r.denom, 0);
+    const tEx      = rows.reduce((s,r) => s + r.ex      * r.denom, 0);
+    const tLoading = rows.reduce((s,r) => s + r.loading * r.denom, 0);
+
+    document.getElementById('tableFoot').innerHTML = `<tr class="total-row">
+      <td>Totals</td>
+      <td id="tOpening">${fmt(tOpening)}</td>
+      <td id="tDep">${fmt(tDep)}</td>
+      <td id="tDis">${fmt(tDis)}</td>
+      <td id="tRem">${fmt(tRem)}</td>
+      <td id="tEx">${fmt(tEx)}</td>
+      <td id="tLoading">${fmt(tLoading)}</td>
+    </tr>`;
+
+    updateBB(tRem, tEx, true);
+
+  } else {
+    // ATM: Type1=₹100, Type2=₹500, Type3=₹200, Type4=₹500
+    rows = [
+      { label:'₹100', denom:100, t:data.type1||{} },
+      { label:'₹500', denom:500, t:data.type2||{}, tag:'(C2)' },
+      { label:'₹200', denom:200, t:data.type3||{} },
+      { label:'₹500', denom:500, t:data.type4||{}, tag:'(C4)' }
+    ].map(r => ({
+      ...r,
+      opening: r.t.loaded||0,
+      dis: r.t.dispensed||0,
+      rem: r.t.remaining||0
+    }));
+
+    // ATM Table header — no Deposited, no Excess
+    document.getElementById('tableHead').innerHTML = `<tr>
+      <th>Denom</th><th>Opening</th><th>Dispensed</th><th>Remaining</th><th>Loading</th>
+    </tr>`;
+
+    document.getElementById('tableBody').innerHTML = rows.map((r,i) => `
+      <tr data-denom="${r.denom}" data-idx="${i}" data-machine="ATM">
+        <td>${r.label}${r.tag ? ' <span style="font-size:9px;color:var(--muted)">'+r.tag+'</span>' : ''}</td>
+        <td><span class="editable" contenteditable="true" data-field="opening">${r.opening}</span></td>
+        <td><span class="editable" contenteditable="true" data-field="dis" oninput="autoAdjustRem(this)">${r.dis}</span></td>
+        <td><span class="editable" contenteditable="true" data-field="rem">${r.rem}</span></td>
+        <td>0</td>
+      </tr>`).join('');
+
+    const tOpening = rows.reduce((s,r) => s + r.opening * r.denom, 0);
+    const tDis     = rows.reduce((s,r) => s + r.dis     * r.denom, 0);
+    // Combine both ₹500 rows for remaining total
+    const tRem     = rows.reduce((s,r) => s + r.rem     * r.denom, 0);
+
+    document.getElementById('tableFoot').innerHTML = `<tr class="total-row">
+      <td>Totals</td>
+      <td id="tOpening">${fmt(tOpening)}</td>
+      <td id="tDis">${fmt(tDis)}</td>
+      <td id="tRem">${fmt(tRem)}</td>
+      <td id="tLoading">0</td>
+    </tr>`;
+
+    updateBB(tRem, 0, false);
+  }
+
+  show('resultWrap'); show('resetBar');
   document.getElementById('balancesCard').classList.add('show');
   document.getElementById('scanBtn').disabled = false;
   document.getElementById('resultWrap').scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
+// ── Auto-adjust Remaining live ──
+function autoAdjustRem(el) {
+  const row = el.closest('tr');
+  const machine = row.dataset.machine;
+  const openingEl = row.querySelector('[data-field="opening"]');
+  const depEl     = row.querySelector('[data-field="dep"]');
+  const disEl     = row.querySelector('[data-field="dis"]');
+  const remEl     = row.querySelector('[data-field="rem"]');
+  if (!remEl || !disEl) return;
+
+  const opening = getElVal(openingEl);
+  const dis     = getElVal(disEl);
+
+  let newRem;
+  if (machine === 'BNA') {
+    const dep = getElVal(depEl);
+    // BNA: Remaining = Opening + Deposited - Dispensed
+    newRem = opening + dep - dis;
+  } else {
+    // ATM: Remaining = Opening - Dispensed
+    newRem = opening - dis;
+  }
+
+  remEl.textContent = Math.max(0, newRem);
+}
+
 // ── Recalculate ──
-function getVal(row, field) {
-  const el = row.querySelector(`[data-field="${field}"]`);
+function getElVal(el) {
   if (!el) return 0;
-  // Read typed content, strip everything except digits
-  const raw = (el.innerText || el.textContent || '').replace(/[^0-9]/g, '');
-  return parseInt(raw) || 0;
+  return parseInt((el.innerText || el.textContent || '').replace(/[^0-9]/g, '')) || 0;
 }
 
 function recalculate() {
+  const isBNA = currentMachineType === 'BNA';
   let tOpening=0, tDep=0, tDis=0, tRem=0, tEx=0;
+
   document.querySelectorAll('#tableBody tr').forEach(row => {
     const d = parseInt(row.dataset.denom) || 1;
-    tOpening += getVal(row, 'opening') * d;
-    tDep     += getVal(row, 'dep')     * d;
-    tDis     += getVal(row, 'dis')     * d;
-    tRem     += getVal(row, 'rem')     * d;
-    tEx      += getVal(row, 'ex')      * d;
+    tOpening += getElVal(row.querySelector('[data-field="opening"]')) * d;
+    tDis     += getElVal(row.querySelector('[data-field="dis"]'))     * d;
+    tRem     += getElVal(row.querySelector('[data-field="rem"]'))     * d;
+    if (isBNA) {
+      tDep += getElVal(row.querySelector('[data-field="dep"]')) * d;
+      tEx  += getElVal(row.querySelector('[data-field="ex"]'))  * d;
+    }
   });
+
   document.getElementById('tOpening').textContent = fmt(tOpening);
-  document.getElementById('tDep').textContent     = fmt(tDep);
   document.getElementById('tDis').textContent     = fmt(tDis);
   document.getElementById('tRem').textContent     = fmt(tRem);
-  document.getElementById('tEx').textContent      = fmt(tEx);
-  updateBB(tRem, tEx);
+  if (isBNA) {
+    document.getElementById('tDep').textContent = fmt(tDep);
+    document.getElementById('tEx').textContent  = fmt(tEx);
+  }
+  updateBB(tRem, isBNA ? tEx : 0, isBNA);
 }
 
-function updateBB(tRem, tEx) {
-  const bb = tRem + tEx;
+function updateBB(tRem, tEx, isBNA) {
+  const bb = tRem + (isBNA ? tEx : 0);
   currentBroughtBack = bb;
-  document.getElementById('bbCalc').innerHTML =
-    `<span class="eq">Brought Back</span>  =  ${fmt(tRem)}  +  ${fmt(tEx)}<br>` +
-    `<span class="bb-divider">──────────────────────────</span><br>` +
-    `<span class="eq">= ${fmt(bb)}</span>`;
+  if (isBNA) {
+    document.getElementById('bbCalc').innerHTML =
+      `<span class="eq">Physical Balance</span>  =  ${fmt(tRem)}  +  ${fmt(tEx)}<br>` +
+      `<span class="bb-divider">──────────────────────────</span><br>` +
+      `<span class="eq">= ${fmt(bb)}</span>`;
+    document.getElementById('bbNote').textContent = tEx > 0 ? `Including Excess ₹${fmt(tEx)}` : 'No Excess';
+  } else {
+    document.getElementById('bbCalc').innerHTML =
+      `<span class="eq">Physical Balance</span>  =  ${fmt(tRem)}<br>` +
+      `<span class="bb-divider">──────────────────────────</span><br>` +
+      `<span class="eq">= ${fmt(bb)}</span>`;
+    document.getElementById('bbNote').textContent = 'ATM — Dispense Only';
+  }
   document.getElementById('bbValue').textContent = '₹' + fmt(bb);
-  document.getElementById('bbNote').textContent  = tEx > 0
-    ? `Including Excess ₹${fmt(tEx)}`
-    : 'No Excess';
 }
 
-// ── Switch & GL Balances ──
+// ── Switch & GL ──
 function calcBalances() {
   const switchBal = parseInt(document.getElementById('switchBal').value) || 0;
   const glBal     = parseInt(document.getElementById('glBal').value)     || 0;
   const physical  = currentBroughtBack;
+  if (!switchBal && !glBal) { alert('Please enter Switch and GL balances.'); return; }
 
-  if (!switchBal && !glBal) {
-    alert('Please enter Switch Balance and GL Balance first.');
-    return;
-  }
-
-  // Physical vs GL = Physical - GL → positive = excess, negative = short
   const physVsGL     = physical - glBal;
-  // Physical vs Switch = Physical - Switch → positive = excess, negative = short
   const physVsSwitch = physical - switchBal;
 
   const grid = document.getElementById('trafficGrid');
   grid.style.display = 'flex';
   grid.innerHTML = '';
-
-  // Physical Balance
   grid.appendChild(trafficItem('Physical Balance', physical, 'Actual', true));
-
-  // Physical vs GL
-  grid.appendChild(trafficItem(
-    'Physical vs GL',
-    physVsGL,
-    physVsGL === 0 ? 'Balanced' : physVsGL > 0 ? 'Excess' : 'Short'
-  ));
-
-  // Physical vs Switch
-  grid.appendChild(trafficItem(
-    'Physical vs Switch',
-    physVsSwitch,
-    physVsSwitch === 0 ? 'Balanced' : physVsSwitch > 0 ? 'Excess' : 'Short'
-  ));
+  grid.appendChild(trafficItem('Physical vs GL',     physVsGL,     physVsGL     === 0 ? 'Balanced' : physVsGL     > 0 ? 'Excess' : 'Short'));
+  grid.appendChild(trafficItem('Physical vs Switch', physVsSwitch, physVsSwitch === 0 ? 'Balanced' : physVsSwitch > 0 ? 'Excess' : 'Short'));
 }
 
-function trafficItem(label, value, badge, isNeutral = false) {
+function trafficItem(label, value, badge, isNeutral=false) {
   const div = document.createElement('div');
-  let colorClass = 'green';
-  if (!isNeutral) {
-    if (value > 0) colorClass = 'amber';   // excess
-    else if (value < 0) colorClass = 'red'; // short
-    else colorClass = 'green';              // balanced
-  }
-  div.className = `traffic-item ${colorClass}`;
-  const sign = !isNeutral && value !== 0 ? (value > 0 ? '+' : '-') : '';
+  let cls = 'green';
+  if (!isNeutral) { cls = value === 0 ? 'green' : value > 0 ? 'amber' : 'red'; }
+  div.className = `traffic-item ${cls}`;
+  const sign = (!isNeutral && value !== 0) ? (value > 0 ? '+' : '-') : '';
   div.innerHTML = `
-    <div>
-      <div class="traffic-label">${label}</div>
-    </div>
+    <div class="traffic-label">${label}</div>
     <div style="display:flex;align-items:center;gap:10px">
       <div class="traffic-value">${sign}₹${fmt(Math.abs(value))}</div>
       <div class="traffic-badge">${badge}</div>
@@ -648,54 +729,47 @@ function trafficItem(label, value, badge, isNeutral = false) {
   return div;
 }
 
+// ── Print ──
+function doPrint() {
+  const dc = document.getElementById('printDataCol');
+  dc.innerHTML = '';
+  const rw = document.getElementById('resultWrap');
+  const bc = document.getElementById('balancesCard');
+  dc.appendChild(rw.cloneNode(true));
+  if (bc.classList.contains('show')) dc.appendChild(bc.cloneNode(true));
+  document.querySelector('.print-only').style.display = 'block';
+  window.print();
+  setTimeout(() => {
+    document.querySelector('.print-only').style.display = 'none';
+    dc.innerHTML = '';
+  }, 1500);
+}
+
 // ── Helpers ──
 function fmt(n) { return Number(n).toLocaleString('en-IN'); }
-
 function fmtDate(str) {
   try {
     const d = new Date(str);
     if (isNaN(d)) return str;
-    return String(d.getDate()).padStart(2,'0') + '/' +
-           String(d.getMonth()+1).padStart(2,'0') + '/' +
-           String(d.getFullYear()).slice(-2);
+    return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getFullYear()).slice(-2);
   } catch { return str; }
 }
-
 function show(id) { document.getElementById(id).classList.add('show'); }
 function hide(id) { document.getElementById(id).classList.remove('show'); }
-function showError(msg) {
-  const e = document.getElementById('errorBox');
-  e.textContent = msg; e.classList.add('show');
-}
-
-function doPrint() {
-  // Move result+balances into print-content for single-page landscape layout
-  const pc = document.getElementById('printContent');
-  const rw = document.getElementById('resultWrap');
-  const bc = document.getElementById('balancesCard');
-  pc.appendChild(rw.cloneNode(true));
-  if (bc.classList.contains('show')) pc.appendChild(bc.cloneNode(true));
-  document.getElementById('printBody').style.display = 'flex';
-  window.print();
-  // Restore after print
-  setTimeout(() => {
-    pc.innerHTML = '';
-    document.getElementById('printBody').style.display = 'none';
-  }, 1000);
-}
+function showError(msg) { const e=document.getElementById('errorBox'); e.textContent=msg; e.classList.add('show'); }
 
 function resetAll() {
-  imageBase64 = ''; pendingData = null; currentBroughtBack = 0;
-  document.getElementById('fileInput').value = '';
-  document.getElementById('uploadZone').style.display = '';
+  imageBase64=''; pendingData=null; currentBroughtBack=0;
+  document.getElementById('fileInput').value='';
+  document.getElementById('uploadZone').style.display='';
   document.getElementById('previewRow').classList.remove('show');
-  ['excess100','excess500','excess200'].forEach(id => document.getElementById(id).value = '0');
-  ['switchBal','glBal'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('trafficGrid').style.display = 'none';
+  ['excess100','excess500','excess200'].forEach(id=>document.getElementById(id).value='0');
+  ['switchBal','glBal'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('trafficGrid').style.display='none';
   document.getElementById('balancesCard').classList.remove('show');
   hide('resultWrap'); hide('resetBar'); hide('errorBox'); hide('processing');
-  document.getElementById('scanBtn').disabled = false;
-  window.scrollTo({ top:0, behavior:'smooth' });
+  document.getElementById('scanBtn').disabled=false;
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 </script>
 </body>
