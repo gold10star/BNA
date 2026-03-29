@@ -3,194 +3,204 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BNA Reconciliation — IOB Ashok Nagar</title>
+<title>BNA Reconciliation</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg: #0c0e0d; --surface: #141614; --surface2: #1c1f1c;
-  --border: #2a2d2a; --border2: #363a36;
-  --accent: #00c896; --accent-dim: #00c89620; --accent2: #4db8ff;
-  --text: #e2e8e2; --muted: #5a6060; --muted2: #3a3f3a;
-  --warn: #f0a500; --danger: #ff5555;
-  --mono: 'IBM Plex Mono', monospace; --sans: 'IBM Plex Sans', sans-serif;
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0e0d;--surface:#141614;--surface2:#1c1f1c;
+  --border:#2a2d2a;--border2:#363a36;
+  --accent:#00c896;--accent-dim:#00c89615;--accent2:#4db8ff;
+  --text:#e2e8e2;--muted:#5a6060;--muted2:#2e3330;
+  --warn:#f0a500;--danger:#ff5555;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  --radius:8px
 }
-body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; padding: 0 0 80px; }
-body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px); pointer-events:none; z-index:0; }
-.wrap { max-width: 780px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;padding:0 0 60px}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px;position:relative}
 
 /* Header */
-.header { padding: 28px 0 22px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
-.header-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
-.header-title { font-size: 26px; font-weight: 300; letter-spacing: -0.5px; }
-.header-title span { font-weight: 600; }
-.header-right { font-family: var(--mono); font-size: 10px; color: var(--muted); text-align: right; line-height: 1.7; }
-.dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--accent); margin-right:5px; animation: pulse 2s ease-in-out infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-/* Sections */
-.section { margin-top: 24px; }
-.section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-.section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+.header{padding:24px 0 20px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.header-title{font-size:24px;font-weight:300;letter-spacing:-0.5px}
+.header-title span{font-weight:600}
+.header-sub{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:0.1em}
 
 /* Card */
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 20px; }
-.api-row { display: flex; gap: 10px; }
-.api-input { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:11px 14px; color:var(--text); font-family:var(--mono); font-size:13px; outline:none; transition:border-color 0.2s; min-width:0; }
-.api-input:focus { border-color: var(--accent); }
-.api-input::placeholder { color: var(--muted); }
-.btn { background:var(--accent); color:#000; border:none; border-radius:4px; padding:11px 20px; font-family:var(--mono); font-size:12px; font-weight:600; cursor:pointer; letter-spacing:0.04em; transition:opacity 0.15s, transform 0.1s; white-space:nowrap; }
-.btn:hover { opacity:0.88; }
-.btn:active { transform:scale(0.97); }
-.btn:disabled { opacity:0.4; cursor:not-allowed; }
-.btn-outline { background:transparent; color:var(--accent); border:1px solid var(--accent); }
-.btn-outline:hover { background:var(--accent-dim); }
-.api-status { font-family:var(--mono); font-size:11px; margin-top:8px; height:16px; }
-.api-status.ok { color:var(--accent); }
-.api-status.err { color:var(--danger); }
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.card-title{font-family:var(--mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.card-title::after{content:'';flex:1;height:1px;background:var(--border)}
 
 /* Upload */
-.upload-zone { background:var(--surface); border:1px dashed var(--border2); border-radius:6px; padding:40px 24px; text-align:center; cursor:pointer; transition:border-color 0.2s,background 0.2s; position:relative; }
-.upload-zone:hover, .upload-zone.drag { border-color:var(--accent); background:#0c1612; }
-.upload-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
-.upload-icon { width:48px; height:48px; border:1px solid var(--border2); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 14px; font-size:20px; color:var(--muted); transition:border-color 0.2s,color 0.2s; }
-.upload-zone:hover .upload-icon { border-color:var(--accent); color:var(--accent); }
-.upload-title { font-size:15px; font-weight:400; margin-bottom:5px; }
-.upload-sub { font-family:var(--mono); font-size:11px; color:var(--muted); }
+.upload-zone{border:1px dashed var(--border2);border-radius:var(--radius);padding:36px 20px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;position:relative;background:var(--surface)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:var(--accent-dim)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:28px;margin-bottom:10px}
+.upload-title{font-size:15px;font-weight:400;margin-bottom:4px}
+.upload-sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
 
-/* Preview */
-.preview-wrap { display:none; background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:16px; gap:16px; align-items:flex-start; }
-.preview-wrap.show { display:flex; }
-.preview-img { width:120px; min-width:120px; height:150px; object-fit:cover; border-radius:4px; border:1px solid var(--border); }
-.preview-info { flex:1; }
-.preview-name { font-family:var(--mono); font-size:12px; color:var(--accent); margin-bottom:6px; word-break:break-all; }
-.preview-hint { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:14px; }
-.extras-row { display:flex; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
-.field { display:flex; flex-direction:column; gap:5px; flex:1; min-width:130px; }
-.field label { font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
-.field input { background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:9px 12px; color:var(--text); font-family:var(--mono); font-size:13px; outline:none; transition:border-color 0.2s; }
-.field input:focus { border-color:var(--accent); }
-.field input::placeholder { color:var(--muted2); }
-.btn-scan { width:100%; padding:13px; font-size:13px; letter-spacing:0.06em; margin-top:4px; }
+/* Preview row */
+.preview-row{display:none;gap:14px;align-items:flex-start}
+.preview-row.show{display:flex}
+.preview-thumb{width:90px;min-width:90px;height:115px;object-fit:cover;border-radius:6px;border:1px solid var(--border)}
+.preview-meta{flex:1;min-width:0}
+.preview-name{font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Excess fields */
+.fields-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)}
+.field input{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border-color 0.2s;width:100%}
+.field input:focus{border-color:var(--accent)}
+.field input::placeholder{color:var(--muted2)}
+
+/* Buttons */
+.btn{background:var(--accent);color:#000;border:none;border-radius:6px;padding:12px 20px;font-family:var(--mono);font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.04em;transition:opacity 0.15s,transform 0.1s;white-space:nowrap;width:100%;display:block;text-align:center}
+.btn:hover{opacity:0.88}
+.btn:active{transform:scale(0.98)}
+.btn:disabled{opacity:0.35;cursor:not-allowed}
+.btn-outline{background:transparent;color:var(--accent);border:1px solid var(--accent);width:auto;display:inline-block}
+.btn-outline:hover{background:var(--accent-dim)}
+.btn-sm{padding:7px 14px;font-size:11px}
 
 /* Processing */
-.processing { display:none; text-align:center; padding:32px; background:var(--surface); border:1px solid var(--border); border-radius:6px; }
-.processing.show { display:block; }
-.spinner { width:32px; height:32px; border:2px solid var(--border2); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 14px; }
-@keyframes spin { to { transform:rotate(360deg); } }
-.processing-text { font-family:var(--mono); font-size:12px; color:var(--muted); }
-.processing-step { font-size:13px; color:var(--text); margin-top:6px; }
+.processing{display:none;text-align:center;padding:36px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px}
+.processing.show{display:block}
+.spinner{width:30px;height:30px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.proc-label{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.proc-step{font-size:13px;color:var(--text);margin-top:5px}
+
+/* Loading Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;width:100%;max-width:380px}
+.modal-title{font-size:16px;font-weight:500;margin-bottom:6px}
+.modal-sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:20px}
+.modal-fields{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.modal-field{display:flex;align-items:center;gap:12px}
+.modal-field label{font-family:var(--mono);font-size:11px;color:var(--muted);width:60px;flex-shrink:0}
+.modal-field input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-family:var(--mono);font-size:14px;outline:none;transition:border-color 0.2s}
+.modal-field input:focus{border-color:var(--accent)}
+.modal-field .denom-tag{font-family:var(--mono);font-size:10px;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent);border-radius:4px;padding:2px 7px;flex-shrink:0}
+.modal-actions{display:flex;gap:10px}
+.modal-actions .btn{flex:1}
 
 /* Result */
-.result-wrap { display:none; background:var(--surface); border:1px solid var(--border); border-radius:6px; overflow:hidden; }
-.result-wrap.show { display:block; }
-.result-header { background:var(--surface2); border-bottom:1px solid var(--border); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; }
-.result-date { font-family:var(--mono); font-size:13px; font-weight:600; color:var(--accent); }
-.result-atm { font-family:var(--mono); font-size:11px; color:var(--muted); }
-.btn-sm { padding:7px 14px; font-size:11px; }
+.result-wrap{display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
+.result-wrap.show{display:block}
+.result-header{background:var(--surface2);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.result-date{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent)}
+.result-ref{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
 
 /* Table */
-.reg-table { width:100%; border-collapse:collapse; }
-.reg-table th { font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); text-align:right; padding:12px 16px 10px; border-bottom:1px solid var(--border); font-weight:400; }
-.reg-table th:first-child { text-align:left; }
-.reg-table td { font-family:var(--mono); font-size:13px; text-align:right; padding:11px 16px; border-bottom:1px solid var(--border); color:var(--text); }
-.reg-table td:first-child { text-align:left; font-weight:500; color:var(--accent2); }
-.reg-table tr:last-child td { border-bottom:none; }
-.reg-table .total-row td { font-weight:600; font-size:13px; color:var(--text); background:var(--surface2); border-top:1px solid var(--border2); border-bottom:1px solid var(--border2); }
-.reg-table .total-row td:first-child { color:var(--muted); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; }
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.reg-table{width:100%;border-collapse:collapse;min-width:520px}
+.reg-table th{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-align:right;padding:10px 12px 8px;border-bottom:1px solid var(--border);font-weight:400;white-space:nowrap}
+.reg-table th:first-child{text-align:left}
+.reg-table td{font-family:var(--mono);font-size:12px;text-align:right;padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+.reg-table td:first-child{text-align:left;font-weight:500;color:var(--accent2)}
+.reg-table tbody tr:last-child td{border-bottom:none}
+.reg-table .total-row td{font-weight:600;background:var(--surface2);border-top:1px solid var(--border2);border-bottom:none;font-size:12px}
+.reg-table .total-row td:first-child{color:var(--muted);font-size:10px;letter-spacing:0.08em;text-transform:uppercase}
+.editable{cursor:text;border-bottom:1px dashed var(--border2);outline:none}
+.editable:focus{background:var(--muted2);border-bottom:1px solid var(--accent);border-radius:2px;padding:1px 3px}
 
 /* Brought back */
-.brought-back { padding:20px; border-top:1px solid var(--border); }
-.bb-calc { font-family:var(--mono); font-size:13px; color:var(--muted); line-height:2; }
-.bb-calc .eq { color:var(--text); }
-.bb-final { display:flex; align-items:baseline; justify-content:space-between; margin-top:14px; padding-top:14px; border-top:2px solid var(--border2); }
-.bb-label { font-family:var(--mono); font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); }
-.bb-value { font-family:var(--mono); font-size:22px; font-weight:600; color:var(--accent); letter-spacing:-0.5px; }
-.bb-note { font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:4px; text-align:right; }
+.brought-back{padding:16px;border-top:1px solid var(--border)}
+.warn-tip{font-family:var(--mono);font-size:9px;color:var(--warn);margin-bottom:12px;letter-spacing:0.06em}
+.bb-calc{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:2.2}
+.bb-calc .eq{color:var(--text)}
+.bb-divider{color:var(--border2)}
+.bb-final{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:2px solid var(--border2);flex-wrap:wrap;gap:10px}
+.bb-label-wrap{}
+.bb-label{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)}
+.bb-note{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:3px}
+.bb-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.bb-value{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--accent);letter-spacing:-1px}
 
 /* Error */
-.error-box { display:none; background:#1a0a0a; border:1px solid #3a1515; border-radius:6px; padding:16px 20px; font-family:var(--mono); font-size:12px; color:var(--danger); line-height:1.6; white-space:pre-wrap; }
-.error-box.show { display:block; }
-.reset-bar { display:none; margin-top:16px; text-align:center; }
-.reset-bar.show { display:block; }
+.error-box{display:none;background:#180b0b;border:1px solid #3d1515;border-radius:var(--radius);padding:14px 16px;font-family:var(--mono);font-size:11px;color:var(--danger);line-height:1.7;white-space:pre-wrap;margin-bottom:16px}
+.error-box.show{display:block}
 
-@media print {
-  body { background:#fff; color:#000; padding:20px; }
-  body::before { display:none; }
-  .header, .section:not(.result-section) { display:none !important; }
-  .result-wrap { display:block !important; border:none; }
-  .result-actions, .reset-bar { display:none !important; }
-  .reg-table th, .reg-table td { color:#000 !important; border-color:#ccc !important; background:#fff !important; }
-  .result-header { background:#f5f5f5 !important; }
-  .result-date { color:#000 !important; }
-  .result-atm { color:#555 !important; }
-  .bb-value { color:#000 !important; }
-  .bb-calc { color:#555 !important; }
-  .bb-calc .eq { color:#000 !important; }
-  .brought-back { border-top:1px solid #ccc !important; }
+/* Reset */
+.reset-bar{display:none;text-align:center;margin-bottom:16px}
+.reset-bar.show{display:block}
+
+/* Print */
+@media print{
+  body{background:#fff;color:#000;padding:10px}
+  .upload-zone,.preview-row,.processing,.error-box,.reset-bar,.modal-overlay,.warn-tip,.result-header .btn-outline,.bb-right .btn-outline{display:none!important}
+  .result-wrap{display:block!important;border:none;box-shadow:none}
+  .result-header{background:#f5f5f5!important}
+  .result-date,.bb-label,.bb-value{color:#000!important}
+  .reg-table th,.reg-table td{color:#000!important;border-color:#ddd!important;background:#fff!important}
+  .reg-table .total-row td{background:#f5f5f5!important}
+  .bb-value{font-size:18px!important}
+  .brought-back{border-top:1px solid #ddd!important}
+  .card-title::after{background:#ddd}
 }
-@media (max-width:500px) {
-  .header { flex-direction:column; align-items:flex-start; }
-  .header-right { text-align:left; }
-  .preview-wrap { flex-direction:column; }
-  .preview-img { width:100%; height:180px; }
-  .bb-value { font-size:18px; }
+
+/* Mobile */
+@media(max-width:480px){
+  .header-title{font-size:20px}
+  .preview-row{flex-direction:column}
+  .preview-thumb{width:100%;height:160px;min-width:unset}
+  .fields-row{grid-template-columns:repeat(3,1fr)}
+  .bb-value{font-size:20px}
+  .modal{padding:20px}
+  .result-header{flex-direction:column;align-items:flex-start}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
 
+  <!-- Header -->
   <div class="header">
-    <div>
-      <div class="header-eyebrow">Indian Overseas Bank · Ashok Nagar</div>
-      <div class="header-title" onclick="tapTitle()" style="cursor:default">BNA <span>Reconciliation</span></div>
-    </div>
-    <div class="header-right">
-      <span class="dot"></span>OpenRouter Powered<br>
-      ATM ID: IOBC1689<br>
-      Opening: ₹3,00,000 fixed
-    </div>
+    <div class="header-title">BNA <span>Reconciliation</span></div>
+    <div class="header-sub">ATM ID: IOBC1689</div>
   </div>
 
-  <!-- API Key (hidden — tap title 5x to reveal) -->
-  <div id="apiSection" style="display:none;margin-top:16px">
-    <div class="section-label">Gemini API Key</div>
-    <div class="card">
-      <div class="api-row">
-        <input class="api-input" id="apiKey" type="password" placeholder="Paste your OpenRouter API key (sk-or-...)">
-        <button class="btn" onclick="saveKey()">Save</button>
-      </div>
-      <div class="api-status" id="apiStatus"></div>
-    </div>
-  </div>
+  <!-- Upload Card -->
+  <div class="card">
+    <div class="card-title">Receipt Image</div>
 
-  <!-- Upload -->
-  <div class="section">
-    <div class="section-label">Receipt Image</div>
+    <!-- Upload Zone -->
     <div class="upload-zone" id="uploadZone">
       <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])">
       <div class="upload-icon">📄</div>
-      <div class="upload-title">Tap to upload receipt photo</div>
-      <div class="upload-sub">JPG · PNG · WEBP — from camera or gallery</div>
+      <div class="upload-title">Tap to upload receipt</div>
+      <div class="upload-sub">JPG · PNG · WEBP</div>
     </div>
 
-    <div class="preview-wrap" id="previewWrap">
-      <img class="preview-img" id="previewImg" src="" alt="Receipt">
-      <div class="preview-info">
+    <!-- Preview -->
+    <div class="preview-row" id="previewRow">
+      <img class="preview-thumb" id="previewImg" src="" alt="">
+      <div class="preview-meta">
         <div class="preview-name" id="previewName"></div>
-        <div class="preview-hint">Receipt loaded. Enter excess &amp; locally loaded notes if any, then tap Scan.</div>
-        <div class="extras-row">
+
+        <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5">
+          Enter excess notes if any, then tap scan.
+        </div>
+
+        <!-- Excess inputs -->
+        <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Excess Notes</div>
+        <div class="fields-row">
           <div class="field">
-            <label>Excess (₹500 notes)</label>
-            <input type="number" id="excessNotes" placeholder="e.g. 39" min="0">
+            <label>₹100</label>
+            <input type="number" id="excess100" placeholder="0" min="0" value="0">
           </div>
           <div class="field">
-            <label>Locally Loaded (₹500 notes)</label>
-            <input type="number" id="locallyNotes" placeholder="e.g. 600" min="0" value="600">
+            <label>₹500</label>
+            <input type="number" id="excess500" placeholder="0" min="0" value="0">
+          </div>
+          <div class="field">
+            <label>₹200</label>
+            <input type="number" id="excess200" placeholder="0" min="0" value="0">
           </div>
         </div>
-        <button class="btn btn-scan" id="scanBtn" onclick="scanReceipt()">⟳ &nbsp;Scan &amp; Reconcile</button>
+
+        <button class="btn" id="scanBtn" onclick="scanReceipt()">⟳ &nbsp;Scan &amp; Reconcile</button>
       </div>
     </div>
   </div>
@@ -198,111 +208,119 @@ body::before { content:''; position:fixed; inset:0; background:repeating-linear-
   <!-- Processing -->
   <div class="processing" id="processing">
     <div class="spinner"></div>
-    <div class="processing-text">Analysing receipt with AI Vision</div>
-    <div class="processing-step" id="processingStep">Reading cassette data...</div>
+    <div class="proc-label">Reading receipt...</div>
+    <div class="proc-step" id="procStep">Extracting cassette data</div>
   </div>
 
   <!-- Error -->
   <div class="error-box" id="errorBox"></div>
 
   <!-- Result -->
-  <div class="section result-section">
-    <div class="result-wrap" id="resultWrap">
-      <div class="result-header">
-        <div>
-          <div class="result-date" id="resultDate">BNA — DD/MM/YY</div>
-          <div class="result-atm" id="resultAtm"></div>
-        </div>
-        <div class="result-actions">
-          <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 Print</button>
-        </div>
+  <div class="result-wrap" id="resultWrap">
+    <div class="result-header">
+      <div>
+        <div class="result-date" id="resultDate">BNA — DD/MM/YY</div>
+        <div class="result-ref" id="resultRef"></div>
       </div>
+      <button class="btn-outline btn-sm" onclick="window.print()">🖨 Print</button>
+    </div>
+    <div class="table-wrap">
       <table class="reg-table">
         <thead>
           <tr>
-            <th>Denom</th><th>Opening</th><th>Dep</th><th>Dis</th><th>Rem</th><th>Ex</th><th>Locally</th>
+            <th>Denom</th>
+            <th>Opening</th>
+            <th>Dep</th>
+            <th>Dis</th>
+            <th>Rem</th>
+            <th>Ex</th>
+            <th>Loading</th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
         <tfoot>
           <tr class="total-row">
             <td>Totals</td>
-            <td id="tOpening"></td><td id="tDep"></td><td id="tDis"></td>
-            <td id="tRem"></td><td id="tEx"></td><td id="tLocally"></td>
+            <td id="tOpening"></td>
+            <td id="tDep"></td>
+            <td id="tDis"></td>
+            <td id="tRem"></td>
+            <td id="tEx"></td>
+            <td id="tLoading"></td>
           </tr>
         </tfoot>
       </table>
-      <div class="brought-back">
-        <div class="bb-calc" id="bbCalc"></div>
-        <div class="bb-final">
-          <div>
-            <div class="bb-label">Total Brought Back</div>
-            <div class="bb-note" id="bbNote"></div>
-          </div>
+    </div>
+    <div class="brought-back">
+      <div class="warn-tip">⚠ Tap any value to correct it, then tap Recalculate</div>
+      <div class="bb-calc" id="bbCalc"></div>
+      <div class="bb-final">
+        <div class="bb-label-wrap">
+          <div class="bb-label">Total Brought Back</div>
+          <div class="bb-note" id="bbNote"></div>
+        </div>
+        <div class="bb-right">
+          <button class="btn-outline btn-sm" onclick="recalculate()">↻ Recalculate</button>
           <div class="bb-value" id="bbValue"></div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Reset -->
   <div class="reset-bar" id="resetBar">
-    <button class="btn btn-outline" onclick="resetAll()">↩ &nbsp;Scan Another Receipt</button>
+    <button class="btn-outline" onclick="resetAll()" style="width:100%;padding:12px">↩ &nbsp;Scan Another Receipt</button>
   </div>
 
 </div>
 
+<!-- Loading Modal -->
+<div class="modal-overlay" id="loadingModal">
+  <div class="modal">
+    <div class="modal-title">Loading Details</div>
+    <div class="modal-sub">Enter notes loaded into each cassette today</div>
+    <div class="modal-fields">
+      <div class="modal-field">
+        <span class="denom-tag">₹100</span>
+        <label>Notes</label>
+        <input type="number" id="load100" placeholder="0" min="0" value="0">
+      </div>
+      <div class="modal-field">
+        <span class="denom-tag">₹500</span>
+        <label>Notes</label>
+        <input type="number" id="load500" placeholder="0" min="0" value="0">
+      </div>
+      <div class="modal-field">
+        <span class="denom-tag">₹200</span>
+        <label>Notes</label>
+        <input type="number" id="load200" placeholder="0" min="0" value="0">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="skipLoading()">Skip</button>
+      <button class="btn" onclick="confirmLoading()">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <script>
-let imageBase64 = '', imageMime = 'image/jpeg';
+// ── CONFIG — API key hidden from UI ──
+const MISTRAL_KEY = 'UIDlkpbZSLx7F203MzejqsHzU7IImkaG';
 
-// Load saved key — prompt on first visit
-window.addEventListener('load', () => {
-  const k = localStorage.getItem('or_key');
-  if (k) {
-    document.getElementById('apiKey').value = k;
-  } else {
-    // First time — show key section automatically
-    document.getElementById('apiSection').style.display = 'block';
-    setStatus('Enter your Gemini API key to get started', 'ok');
-  }
-});
+let imageBase64 = '';
+let pendingData = null, pendingEx100 = 0, pendingEx500 = 0, pendingEx200 = 0;
 
-// Tap title 5 times to reveal API key settings
-let tapCount = 0, tapTimer;
-function tapTitle() {
-  tapCount++;
-  clearTimeout(tapTimer);
-  tapTimer = setTimeout(() => { tapCount = 0; }, 2000);
-  if (tapCount >= 5) {
-    tapCount = 0;
-    const sec = document.getElementById('apiSection');
-    const isHidden = sec.style.display === 'none';
-    sec.style.display = isHidden ? 'block' : 'none';
-    if (isHidden) sec.scrollIntoView({ behavior: 'smooth' });
-  }
-}
-
-// Drag & drop
+// ── Drag & Drop ──
 const zone = document.getElementById('uploadZone');
 zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
 zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
-zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
-
-function saveKey() {
-  const k = document.getElementById('apiKey').value.trim();
-  if (!k.startsWith('sk-or-')) { setStatus('✗ Invalid — key should start with sk-or-', 'err'); return; }
-  localStorage.removeItem('or_key');
-  localStorage.setItem('or_key', k);
-  setStatus('✓ Saved successfully', 'ok');
-}
-
-function setStatus(msg, type) {
-  const el = document.getElementById('apiStatus');
-  el.textContent = msg; el.className = 'api-status ' + type;
-}
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('drag');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
 
 function handleFile(file) {
   if (!file) return;
-  imageMime = file.type || 'image/jpeg';
   const reader = new FileReader();
   reader.onload = e => {
     const data = e.target.result;
@@ -310,153 +328,202 @@ function handleFile(file) {
     document.getElementById('previewImg').src = data;
     document.getElementById('previewName').textContent = file.name;
     document.getElementById('uploadZone').style.display = 'none';
-    document.getElementById('previewWrap').classList.add('show');
+    document.getElementById('previewRow').classList.add('show');
     hide('resultWrap'); hide('resetBar'); hide('errorBox');
   };
   reader.readAsDataURL(file);
 }
 
+// ── Scan ──
 async function scanReceipt() {
-  const apiKey = localStorage.getItem('or_key') || document.getElementById('apiKey').value.trim();
-  if (!apiKey) { showError('Please save your Gemini API key first.'); return; }
   if (!imageBase64) { showError('Please upload a receipt image first.'); return; }
 
-  const excessNotes  = parseInt(document.getElementById('excessNotes').value)  || 0;
-  const locallyNotes = parseInt(document.getElementById('locallyNotes').value) || 0;
+  const ex100 = parseInt(document.getElementById('excess100').value) || 0;
+  const ex500 = parseInt(document.getElementById('excess500').value) || 0;
+  const ex200 = parseInt(document.getElementById('excess200').value) || 0;
 
   show('processing'); hide('resultWrap'); hide('resetBar'); hide('errorBox');
   document.getElementById('scanBtn').disabled = true;
 
-  const steps = ['Reading cassette data...','Identifying denominations...','Extracting loaded & remaining...','Building reconciliation...'];
+  const steps = ['Extracting cassette data...','Reading denominations...','Identifying values...','Almost done...'];
   let si = 0;
-  const stepEl = document.getElementById('processingStep');
-  const timer = setInterval(() => { si = (si+1) % steps.length; stepEl.textContent = steps[si]; }, 900);
+  const stepEl = document.getElementById('procStep');
+  const timer = setInterval(() => { si=(si+1)%steps.length; stepEl.textContent=steps[si]; }, 900);
 
-  const prompt = `You are a precise data extractor for Indian Overseas Bank ATM receipts.
+  const prompt = `Extract cassette data from this Indian Overseas Bank ATM/BNA receipt image.
+The receipt may be rotated — read in any orientation.
 
-The receipt has cassette data in this exact format:
-CASSETTE   TYPE 1    TYPE 2
-LOADED       X         X
-DEPOSITED    X         X
-DISPENSED    X         X
-REMAINING    X         X
+TWO cassette blocks:
+Block 1: TYPE 1 and TYPE 2 columns — rows: LOADED, DEPOSITED, DISPENSED, REMAINING
+Block 2: TYPE 3 and TYPE 4 columns — rows: LOADED, DEPOSITED, DISPENSED, REMAINING
 
-CASSETTE   TYPE 3    TYPE 4
-LOADED       X         X
-DEPOSITED    X         X
-DISPENSED    X         X
-REMAINING    X         X
+DENOMINATION MAPPING:
+- TYPE 1 = ignore (all zeros)
+- TYPE 2 = ₹100 notes
+- TYPE 3 = ₹500 notes
+- TYPE 4 = ₹200 notes
 
-Your task:
-- Read EACH row carefully for EACH type
-- Type 1 = ignore (always 0)
-- Type 2 = 100 rupee notes
-- Type 3 = 500 rupee notes
-- Type 4 = 200 rupee notes
-- Extract LOADED, DEPOSITED, DISPENSED, REMAINING for Type 2, Type 3, Type 4
-- Also extract date, ATM ID, REF NO
+Extract for each type: loaded, deposited, dispensed, remaining as integers.
+Extract from header: date (e.g. "18 Aug 2025"), ATM ID, REF NO.
+Do NOT mix up columns or rows. Return 0 only if receipt shows 0.
 
-IMPORTANT: Do NOT confuse rows. DEPOSITED and REMAINING are different rows. Read each value carefully.
-
-Return ONLY this JSON (no markdown, no explanation):
-{"date":"18 Sep 2025","atm_id":"IOBC1689","ref_no":"526111381053","type2":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0},"type3":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0},"type4":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0}}`;
+Return ONLY valid JSON, no markdown:
+{"date":"DD Mon YYYY","atm_id":"IOBC1689","ref_no":"XXXXX","type2":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0},"type3":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0},"type4":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0}}`;
 
   try {
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': 'https://bna-reconciliation.local',
-        'X-Title': 'BNA Reconciliation'
+        'Authorization': `Bearer ${MISTRAL_KEY}`
       },
       body: JSON.stringify({
-        model: 'openrouter/free',
+        model: 'pixtral-12b-2409',
         messages: [{
           role: 'user',
           content: [
-            { type: 'text', text: prompt },
-            { type: 'image_url', image_url: { url: `data:${imageMime};base64,${imageBase64}` } }
+            { type: 'image_url', image_url: `data:image/jpeg;base64,${imageBase64}` },
+            { type: 'text', text: prompt }
           ]
         }],
         temperature: 0,
-        max_tokens: 512
+        max_tokens: 1024
       })
     });
+
     clearInterval(timer);
     const json = await res.json();
-    if (!res.ok) throw new Error(json.error?.message || 'OpenRouter API error ' + res.status);
+    if (!res.ok) throw new Error(json.error?.message || json.message || 'API error ' + res.status);
     const raw = json.choices?.[0]?.message?.content || '';
-    const cleaned = raw.replace(/```json|```/g, '').trim();
+    const cleaned = raw.replace(/```json|```/g,'').trim();
     const data = JSON.parse(cleaned);
+
+    // Store pending data and show loading modal
+    pendingData = data;
+    pendingEx100 = ex100;
+    pendingEx500 = ex500;
+    pendingEx200 = ex200;
+
     hide('processing');
-    renderResult(data, excessNotes, locallyNotes);
+    showLoadingModal();
+
   } catch (err) {
     clearInterval(timer);
     hide('processing');
-    showError('Error: ' + err.message + '\n\nCheck your API key and make sure the receipt image is clear.');
+    showError('Error: ' + err.message);
     document.getElementById('scanBtn').disabled = false;
   }
 }
 
-function renderResult(data, excessNotes, locallyNotes) {
-  const config = [
-    { key: 'type2', denom: 100,  label: '₹100',  openingNotes: 0,   locally: 0,            excess: 0            },
-    { key: 'type3', denom: 500,  label: '₹500',  openingNotes: 600, locally: locallyNotes, excess: excessNotes  },
-    { key: 'type4', denom: 200,  label: '₹200',  openingNotes: 0,   locally: 0,            excess: 0            }
+// ── Loading Modal ──
+function showLoadingModal() {
+  document.getElementById('load100').value = '0';
+  document.getElementById('load500').value = '0';
+  document.getElementById('load200').value = '0';
+  document.getElementById('loadingModal').classList.add('show');
+  document.getElementById('load500').focus();
+}
+
+function confirmLoading() {
+  const l100 = parseInt(document.getElementById('load100').value) || 0;
+  const l500 = parseInt(document.getElementById('load500').value) || 0;
+  const l200 = parseInt(document.getElementById('load200').value) || 0;
+  document.getElementById('loadingModal').classList.remove('show');
+  renderResult(pendingData, pendingEx100, pendingEx500, pendingEx200, l100, l500, l200);
+}
+
+function skipLoading() {
+  document.getElementById('loadingModal').classList.remove('show');
+  renderResult(pendingData, pendingEx100, pendingEx500, pendingEx200, 0, 0, 0);
+}
+
+// ── Render ──
+function renderResult(data, ex100, ex500, ex200, l100, l500, l200) {
+  const t2 = data.type2 || {}, t3 = data.type3 || {}, t4 = data.type4 || {};
+
+  // Opening = Loaded values from receipt × denomination
+  const op100 = (t2.loaded || 0) * 100;
+  const op500 = (t3.loaded || 0) * 500;
+  const op200 = (t4.loaded || 0) * 200;
+  const tOpening = op100 + op500 + op200;
+
+  const rows = [
+    { label:'₹100', denom:100, opening:t2.loaded||0, dep:t2.deposited||0, dis:t2.dispensed||0, rem:t2.remaining||0, ex:ex100, loading:l100 },
+    { label:'₹500', denom:500, opening:t3.loaded||0, dep:t3.deposited||0, dis:t3.dispensed||0, rem:t3.remaining||0, ex:ex500, loading:l500 },
+    { label:'₹200', denom:200, opening:t4.loaded||0, dep:t4.deposited||0, dis:t4.dispensed||0, rem:t4.remaining||0, ex:ex200, loading:l200 }
   ];
 
-  const rows = config.map(c => {
-    const r = data[c.key] || {};
-    return { ...c, dep: r.deposited||0, dis: r.dispensed||0, rem: r.remaining||0 };
-  });
-
-  const tOpening = 300000;
   const tDep     = rows.reduce((s,r) => s + r.dep * r.denom, 0);
   const tDis     = rows.reduce((s,r) => s + r.dis * r.denom, 0);
   const tRem     = rows.reduce((s,r) => s + r.rem * r.denom, 0);
-  const tEx      = excessNotes * 500;
-  const tLocally = locallyNotes * 500;
-  const broughtBack = tRem + tEx;
+  const tEx      = rows.reduce((s,r) => s + r.ex  * r.denom, 0);
+  const tLoading = rows.reduce((s,r) => s + r.loading * r.denom, 0);
 
-  // Header
-  document.getElementById('resultDate').textContent = 'BNA — ' + fmtDate(data.date || '');
-  document.getElementById('resultAtm').textContent  = `ATM ID: ${data.atm_id||'IOBC1689'} · REF: ${data.ref_no||'—'}`;
+  document.getElementById('resultDate').textContent = 'BNA — ' + fmtDate(data.date||'');
+  document.getElementById('resultRef').textContent  = `ATM: ${data.atm_id||'IOBC1689'} · REF: ${data.ref_no||'—'}`;
 
-  // Rows
   document.getElementById('tableBody').innerHTML = rows.map(r => `
-    <tr>
+    <tr data-denom="${r.denom}">
       <td>${r.label}</td>
-      <td>${r.openingNotes > 0 ? r.openingNotes : '0'}</td>
-      <td>${r.dep}</td>
-      <td>${r.dis}</td>
-      <td>${r.rem}</td>
-      <td>${r.excess > 0 ? r.excess : '0'}</td>
-      <td>${r.locally > 0 ? r.locally : '0'}</td>
+      <td contenteditable="true" class="editable" data-field="opening">${r.opening}</td>
+      <td contenteditable="true" class="editable" data-field="dep">${r.dep}</td>
+      <td contenteditable="true" class="editable" data-field="dis">${r.dis}</td>
+      <td contenteditable="true" class="editable" data-field="rem">${r.rem}</td>
+      <td contenteditable="true" class="editable" data-field="ex">${r.ex}</td>
+      <td>${r.loading}</td>
     </tr>`).join('');
 
-  // Totals
   document.getElementById('tOpening').textContent = fmt(tOpening);
   document.getElementById('tDep').textContent     = fmt(tDep);
   document.getElementById('tDis').textContent     = fmt(tDis);
   document.getElementById('tRem').textContent     = fmt(tRem);
   document.getElementById('tEx').textContent      = fmt(tEx);
-  document.getElementById('tLocally').textContent = fmt(tLocally);
+  document.getElementById('tLoading').textContent = fmt(tLoading);
 
-  // Brought back
-  const hasEx = tEx > 0;
-  document.getElementById('bbCalc').innerHTML =
-    `<span class="eq">Brought Back</span> = ${fmt(tRem)} + ${fmt(tEx)}<br>` +
-    `<span style="color:var(--border2)">────────────────────────</span><br>` +
-    `<span class="eq">= ${fmt(broughtBack)}</span>`;
-  document.getElementById('bbValue').textContent = '₹' + fmt(broughtBack);
-  document.getElementById('bbNote').textContent  = hasEx ? `(Including Excess of ₹${fmt(tEx)})` : '(No Excess)';
-
+  updateBB(tRem, tEx);
   show('resultWrap'); show('resetBar');
   document.getElementById('scanBtn').disabled = false;
-  document.getElementById('resultWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('resultWrap').scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
+function updateBB(tRem, tEx) {
+  const bb = tRem + tEx;
+  document.getElementById('bbCalc').innerHTML =
+    `<span class="eq">Brought Back</span>  =  ${fmt(tRem)}  +  ${fmt(tEx)}<br>` +
+    `<span class="bb-divider">──────────────────────────</span><br>` +
+    `<span class="eq">= ${fmt(bb)}</span>`;
+  document.getElementById('bbValue').textContent = '₹' + fmt(bb);
+  document.getElementById('bbNote').textContent  = tEx > 0
+    ? `Including Excess ₹${fmt(tEx)}`
+    : 'No Excess';
+}
+
+function getVal(row, field) {
+  const el = row.querySelector('[data-field="' + field + '"]');
+  if (!el) return 0;
+  // strip commas and spaces, parse integer
+  return parseInt(el.textContent.replace(/[^0-9]/g, '')) || 0;
+}
+
+function recalculate() {
+  let tOpening=0, tDep=0, tDis=0, tRem=0, tEx=0;
+  document.querySelectorAll('#tableBody tr').forEach(row => {
+    const d = parseInt(row.dataset.denom) || 1;
+    tOpening += getVal(row, 'opening') * d;
+    tDep     += getVal(row, 'dep')     * d;
+    tDis     += getVal(row, 'dis')     * d;
+    tRem     += getVal(row, 'rem')     * d;
+    tEx      += getVal(row, 'ex')      * d;
+  });
+  document.getElementById('tOpening').textContent = fmt(tOpening);
+  document.getElementById('tDep').textContent     = fmt(tDep);
+  document.getElementById('tDis').textContent     = fmt(tDis);
+  document.getElementById('tRem').textContent     = fmt(tRem);
+  document.getElementById('tEx').textContent      = fmt(tEx);
+  updateBB(tRem, tEx);
+}
+
+// ── Helpers ──
 function fmt(n) { return Number(n).toLocaleString('en-IN'); }
 
 function fmtDate(str) {
@@ -471,18 +538,20 @@ function fmtDate(str) {
 
 function show(id) { document.getElementById(id).classList.add('show'); }
 function hide(id) { document.getElementById(id).classList.remove('show'); }
-function showError(msg) { const e = document.getElementById('errorBox'); e.textContent = msg; e.classList.add('show'); }
+function showError(msg) {
+  const e = document.getElementById('errorBox');
+  e.textContent = msg; e.classList.add('show');
+}
 
 function resetAll() {
-  imageBase64 = '';
+  imageBase64 = ''; pendingData = null;
   document.getElementById('fileInput').value = '';
   document.getElementById('uploadZone').style.display = '';
-  document.getElementById('previewWrap').classList.remove('show');
-  document.getElementById('excessNotes').value = '';
-  document.getElementById('locallyNotes').value = '600';
+  document.getElementById('previewRow').classList.remove('show');
+  ['excess100','excess500','excess200'].forEach(id => document.getElementById(id).value = '0');
   hide('resultWrap'); hide('resetBar'); hide('errorBox'); hide('processing');
   document.getElementById('scanBtn').disabled = false;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top:0, behavior:'smooth' });
 }
 </script>
 </body>
