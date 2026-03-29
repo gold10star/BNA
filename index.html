@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BNA Reconciliation</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0e0d;--surface:#141614;--surface2:#1c1f1c;
+  --border:#2a2d2a;--border2:#363a36;
+  --accent:#00c896;--accent-dim:#00c89615;--accent2:#4db8ff;
+  --text:#e2e8e2;--muted:#5a6060;--muted2:#2e3330;
+  --warn:#f0a500;--danger:#ff5555;--success:#00c896;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  --radius:8px
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;padding:0 0 60px}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+
+/* Header */
+.header{padding:24px 0 20px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.header-title{font-size:24px;font-weight:300;letter-spacing:-0.5px}
+.header-title span{font-weight:600}
+.header-sub{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:0.1em}
+
+/* Card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.card-title{font-family:var(--mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.card-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Upload */
+.upload-zone{border:1px dashed var(--border2);border-radius:var(--radius);padding:36px 20px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;position:relative;background:var(--surface)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:var(--accent-dim)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:28px;margin-bottom:10px}
+.upload-title{font-size:15px;font-weight:400;margin-bottom:4px}
+.upload-sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* Preview */
+.preview-row{display:none;gap:14px;align-items:flex-start}
+.preview-row.show{display:flex}
+.preview-thumb{width:90px;min-width:90px;height:115px;object-fit:cover;border-radius:6px;border:1px solid var(--border)}
+.preview-meta{flex:1;min-width:0}
+.preview-name{font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.preview-hint{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+
+/* Fields */
+.fields-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)}
+.field input,.field select{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border-color 0.2s;width:100%}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.field input::placeholder{color:var(--muted2)}
+
+/* Buttons */
+.btn{background:var(--accent);color:#000;border:none;border-radius:6px;padding:12px 20px;font-family:var(--mono);font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.04em;transition:opacity 0.15s,transform 0.1s;white-space:nowrap}
+.btn:hover{opacity:0.88}
+.btn:active{transform:scale(0.98)}
+.btn:disabled{opacity:0.35;cursor:not-allowed}
+.btn-block{width:100%;display:block;text-align:center}
+.btn-outline{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.btn-outline:hover{background:var(--accent-dim)}
+.btn-sm{padding:7px 14px;font-size:11px}
+.btn-danger{background:var(--danger);color:#fff}
+
+/* Processing */
+.processing{display:none;text-align:center;padding:36px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px}
+.processing.show{display:block}
+.spinner{width:30px;height:30px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.proc-label{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.proc-step{font-size:13px;color:var(--text);margin-top:5px}
+
+/* Loading Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;width:100%;max-width:360px}
+.modal-title{font-size:16px;font-weight:500;margin-bottom:4px}
+.modal-sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.modal-field{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.denom-tag{font-family:var(--mono);font-size:10px;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent);border-radius:4px;padding:3px 8px;min-width:44px;text-align:center;flex-shrink:0}
+.modal-field label{font-family:var(--mono);font-size:11px;color:var(--muted);width:48px;flex-shrink:0}
+.modal-field input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-family:var(--mono);font-size:14px;outline:none;transition:border-color 0.2s}
+.modal-field input:focus{border-color:var(--accent)}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.modal-actions .btn{flex:1;text-align:center}
+
+/* Result */
+.result-wrap{display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
+.result-wrap.show{display:block}
+.result-header{background:var(--surface2);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.result-date{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent)}
+.result-ref{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+
+/* Table */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.reg-table{width:100%;border-collapse:collapse;min-width:500px}
+.reg-table th{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-align:right;padding:10px 12px 8px;border-bottom:1px solid var(--border);font-weight:400;white-space:nowrap}
+.reg-table th:first-child{text-align:left}
+.reg-table td{font-family:var(--mono);font-size:12px;text-align:right;padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+.reg-table td:first-child{text-align:left;font-weight:500;color:var(--accent2)}
+.reg-table tbody tr:last-child td{border-bottom:none}
+.reg-table .total-row td{font-weight:600;background:var(--surface2);border-top:1px solid var(--border2);border-bottom:none}
+.reg-table .total-row td:first-child{color:var(--muted);font-size:10px;letter-spacing:0.08em;text-transform:uppercase}
+.editable{cursor:text;border-bottom:1px dashed var(--border2);outline:none;min-width:30px;display:inline-block}
+.editable:focus{background:var(--muted2);border-bottom:1px solid var(--accent);border-radius:2px;padding:1px 4px}
+
+/* Brought back */
+.brought-back{padding:16px;border-top:1px solid var(--border)}
+.warn-tip{font-family:var(--mono);font-size:9px;color:var(--warn);margin-bottom:12px;letter-spacing:0.06em}
+.bb-calc{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:2.2}
+.bb-calc .eq{color:var(--text)}
+.bb-divider{color:var(--border2)}
+.bb-final{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:2px solid var(--border2);flex-wrap:wrap;gap:10px}
+.bb-label{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)}
+.bb-note{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:3px}
+.bb-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.bb-value{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--accent);letter-spacing:-1px}
+
+/* Switch & GL Section */
+.balances-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;display:none}
+.balances-card.show{display:block}
+.bal-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.bal-btn{margin-bottom:16px}
+
+/* Traffic Light Results */
+.traffic-grid{display:flex;flex-direction:column;gap:10px}
+.traffic-item{border-radius:8px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.traffic-item.green{background:#0a1f14;border:1px solid #1a5c32}
+.traffic-item.red{background:#1f0a0a;border:1px solid #5c1a1a}
+.traffic-item.amber{background:#1f160a;border:1px solid #5c3d1a}
+.traffic-label{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.1em}
+.traffic-item.green .traffic-label{color:#4caf6e}
+.traffic-item.red .traffic-label{color:#ff6b6b}
+.traffic-item.amber .traffic-label{color:#ffb347}
+.traffic-value{font-family:var(--mono);font-size:18px;font-weight:600}
+.traffic-item.green .traffic-value{color:#00c896}
+.traffic-item.red .traffic-value{color:#ff5555}
+.traffic-item.amber .traffic-value{color:#f0a500}
+.traffic-badge{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;font-weight:600}
+.traffic-item.green .traffic-badge{background:#1a5c32;color:#4caf6e}
+.traffic-item.red .traffic-badge{background:#5c1a1a;color:#ff6b6b}
+.traffic-item.amber .traffic-badge{background:#5c3d1a;color:#ffb347}
+
+/* Error */
+.error-box{display:none;background:#180b0b;border:1px solid #3d1515;border-radius:var(--radius);padding:14px 16px;font-family:var(--mono);font-size:11px;color:var(--danger);line-height:1.7;white-space:pre-wrap;margin-bottom:16px}
+.error-box.show{display:block}
+
+/* Reset */
+.reset-bar{display:none;margin-bottom:16px}
+.reset-bar.show{display:block}
+
+/* Print */
+@media print{
+  body{background:#fff;color:#000;padding:10px}
+  .upload-zone,.preview-row,.processing,.error-box,.reset-bar,
+  .modal-overlay,.warn-tip,.bal-btn,.result-header .btn-outline,
+  .bb-right .btn-outline,.balances-card .field,.balances-card .bal-inputs{display:none!important}
+  .result-wrap,.balances-card{display:block!important;border:1px solid #ddd;box-shadow:none}
+  .result-header{background:#f5f5f5!important}
+  .result-date{color:#000!important}
+  .reg-table th,.reg-table td{color:#000!important;border-color:#ddd!important;background:#fff!important}
+  .reg-table .total-row td{background:#f5f5f5!important}
+  .bb-value{color:#000!important;font-size:18px!important}
+  .traffic-item{border:1px solid #ddd!important;background:#fff!important}
+  .traffic-label,.traffic-value,.traffic-badge{color:#000!important;background:#eee!important}
+}
+
+/* Mobile */
+@media(max-width:480px){
+  .header-title{font-size:20px}
+  .preview-row{flex-direction:column}
+  .preview-thumb{width:100%;height:160px;min-width:unset}
+  .bb-value{font-size:20px}
+  .modal{padding:18px}
+  .bal-inputs{grid-template-columns:1fr}
+  .traffic-item{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">BNA <span>Reconciliation</span></div>
+    <div class="header-sub">ATM ID: IOBC1689</div>
+  </div>
+
+  <!-- Upload Card -->
+  <div class="card">
+    <div class="card-title">Receipt Image</div>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])">
+      <div class="upload-icon">📄</div>
+      <div class="upload-title">Tap to upload receipt</div>
+      <div class="upload-sub">JPG · PNG · WEBP — camera or gallery</div>
+    </div>
+    <div class="preview-row" id="previewRow">
+      <img class="preview-thumb" id="previewImg" src="" alt="">
+      <div class="preview-meta">
+        <div class="preview-name" id="previewName"></div>
+        <div class="preview-hint">Enter excess notes if any, then tap Scan.</div>
+        <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Excess Notes</div>
+        <div class="fields-grid" style="margin-bottom:14px">
+          <div class="field"><label>₹100</label><input type="number" id="excess100" placeholder="0" min="0" value="0"></div>
+          <div class="field"><label>₹500</label><input type="number" id="excess500" placeholder="0" min="0" value="0"></div>
+          <div class="field"><label>₹200</label><input type="number" id="excess200" placeholder="0" min="0" value="0"></div>
+        </div>
+        <button class="btn btn-block" id="scanBtn" onclick="scanReceipt()">⟳ &nbsp;Scan &amp; Reconcile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Processing -->
+  <div class="processing" id="processing">
+    <div class="spinner"></div>
+    <div class="proc-label">Reading receipt...</div>
+    <div class="proc-step" id="procStep">Extracting cassette data</div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- Result Table -->
+  <div class="result-wrap" id="resultWrap">
+    <div class="result-header">
+      <div>
+        <div class="result-date" id="resultDate">BNA — DD/MM/YY</div>
+        <div class="result-ref" id="resultRef"></div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 Print</button>
+    </div>
+    <div class="table-wrap">
+      <table class="reg-table">
+        <thead>
+          <tr>
+            <th>Denom</th><th>Opening</th><th>Dep</th><th>Dis</th><th>Rem</th><th>Ex</th><th>Loading</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td>Totals</td>
+            <td id="tOpening"></td><td id="tDep"></td><td id="tDis"></td>
+            <td id="tRem"></td><td id="tEx"></td><td id="tLoading"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="brought-back">
+      <div class="warn-tip">⚠ Tap any value to edit · tap Recalculate after editing</div>
+      <div class="bb-calc" id="bbCalc"></div>
+      <div class="bb-final">
+        <div>
+          <div class="bb-label">Total Brought Back</div>
+          <div class="bb-note" id="bbNote"></div>
+        </div>
+        <div class="bb-right">
+          <button class="btn btn-outline btn-sm" onclick="recalculate()">↻ Recalculate</button>
+          <div class="bb-value" id="bbValue"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Switch & GL Balances -->
+  <div class="balances-card" id="balancesCard">
+    <div class="card-title">Switch &amp; GL Balances</div>
+    <div class="bal-inputs">
+      <div class="field"><label>Switch Balance (₹)</label><input type="number" id="switchBal" placeholder="e.g. 997900" min="0"></div>
+      <div class="field"><label>GL Balance (₹)</label><input type="number" id="glBal" placeholder="e.g. 997900" min="0"></div>
+    </div>
+    <div class="bal-btn">
+      <button class="btn btn-block" onclick="calcBalances()">Calculate Differences</button>
+    </div>
+    <div class="traffic-grid" id="trafficGrid" style="display:none"></div>
+  </div>
+
+  <!-- Reset -->
+  <div class="reset-bar" id="resetBar">
+    <button class="btn btn-outline btn-block" onclick="resetAll()">↩ &nbsp;Scan Another Receipt</button>
+  </div>
+
+</div>
+
+<!-- Loading Modal -->
+<div class="modal-overlay" id="loadingModal">
+  <div class="modal">
+    <div class="modal-title">Loading Details</div>
+    <div class="modal-sub">Enter notes loaded into each cassette today.<br>Leave 0 if not loaded.</div>
+    <div class="modal-field">
+      <span class="denom-tag">₹100</span>
+      <label>Notes</label>
+      <input type="number" id="load100" placeholder="0" min="0" value="0">
+    </div>
+    <div class="modal-field">
+      <span class="denom-tag">₹500</span>
+      <label>Notes</label>
+      <input type="number" id="load500" placeholder="0" min="0" value="0">
+    </div>
+    <div class="modal-field">
+      <span class="denom-tag">₹200</span>
+      <label>Notes</label>
+      <input type="number" id="load200" placeholder="0" min="0" value="0">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="skipLoading()">Skip</button>
+      <button class="btn" onclick="confirmLoading()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let imageBase64 = '', imageMime = 'image/jpeg';
+let pendingData = null, pendingEx = {};
+let currentBroughtBack = 0;
+
+// ── Drag & Drop ──
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('drag');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+
+function handleFile(file) {
+  if (!file) return;
+  imageMime = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = e.target.result;
+    imageBase64 = data.split(',')[1];
+    document.getElementById('previewImg').src = data;
+    document.getElementById('previewName').textContent = file.name;
+    document.getElementById('uploadZone').style.display = 'none';
+    document.getElementById('previewRow').classList.add('show');
+    hide('resultWrap'); hide('resetBar'); hide('errorBox');
+    document.getElementById('balancesCard').classList.remove('show');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Scan ──
+async function scanReceipt() {
+  if (!imageBase64) { showError('Please upload a receipt image first.'); return; }
+
+  pendingEx = {
+    ex100: parseInt(document.getElementById('excess100').value) || 0,
+    ex500: parseInt(document.getElementById('excess500').value) || 0,
+    ex200: parseInt(document.getElementById('excess200').value) || 0
+  };
+
+  show('processing'); hide('resultWrap'); hide('resetBar'); hide('errorBox');
+  document.getElementById('balancesCard').classList.remove('show');
+  document.getElementById('scanBtn').disabled = true;
+
+  const steps = ['Extracting cassette data...','Reading denominations...','Identifying values...','Almost done...'];
+  let si = 0;
+  const stepEl = document.getElementById('procStep');
+  const timer = setInterval(() => { si=(si+1)%steps.length; stepEl.textContent=steps[si]; }, 900);
+
+  try {
+    // Call our Vercel backend proxy — key is safe on server
+    const res = await fetch('/api/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageBase64, imageMime })
+    });
+
+    clearInterval(timer);
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Server error ' + res.status);
+
+    pendingData = data;
+    hide('processing');
+    showLoadingModal();
+
+  } catch (err) {
+    clearInterval(timer);
+    hide('processing');
+    showError('Error: ' + err.message + '\n\nMake sure the app is deployed on Vercel with MISTRAL_API_KEY set.');
+    document.getElementById('scanBtn').disabled = false;
+  }
+}
+
+// ── Loading Modal ──
+function showLoadingModal() {
+  ['load100','load500','load200'].forEach(id => document.getElementById(id).value = '0');
+  document.getElementById('loadingModal').classList.add('show');
+  document.getElementById('load500').focus();
+}
+
+function confirmLoading() {
+  const l100 = parseInt(document.getElementById('load100').value) || 0;
+  const l500 = parseInt(document.getElementById('load500').value) || 0;
+  const l200 = parseInt(document.getElementById('load200').value) || 0;
+  document.getElementById('loadingModal').classList.remove('show');
+  renderResult(pendingData, pendingEx, l100, l500, l200);
+}
+
+function skipLoading() {
+  document.getElementById('loadingModal').classList.remove('show');
+  renderResult(pendingData, pendingEx, 0, 0, 0);
+}
+
+// ── Render ──
+function renderResult(data, ex, l100, l500, l200) {
+  const t2 = data.type2 || {}, t3 = data.type3 || {}, t4 = data.type4 || {};
+
+  const rows = [
+    { label:'₹100', denom:100, opening:t2.loaded||0, dep:t2.deposited||0, dis:t2.dispensed||0, rem:t2.remaining||0, ex:ex.ex100, loading:l100 },
+    { label:'₹500', denom:500, opening:t3.loaded||0, dep:t3.deposited||0, dis:t3.dispensed||0, rem:t3.remaining||0, ex:ex.ex500, loading:l500 },
+    { label:'₹200', denom:200, opening:t4.loaded||0, dep:t4.deposited||0, dis:t4.dispensed||0, rem:t4.remaining||0, ex:ex.ex200, loading:l200 }
+  ];
+
+  const tOpening = rows.reduce((s,r) => s + r.opening * r.denom, 0);
+  const tDep     = rows.reduce((s,r) => s + r.dep     * r.denom, 0);
+  const tDis     = rows.reduce((s,r) => s + r.dis     * r.denom, 0);
+  const tRem     = rows.reduce((s,r) => s + r.rem     * r.denom, 0);
+  const tEx      = rows.reduce((s,r) => s + r.ex      * r.denom, 0);
+  const tLoading = rows.reduce((s,r) => s + r.loading * r.denom, 0);
+
+  document.getElementById('resultDate').textContent = 'BNA — ' + fmtDate(data.date||'');
+  document.getElementById('resultRef').textContent  = `ATM: ${data.atm_id||'IOBC1689'} · REF: ${data.ref_no||'—'}`;
+
+  // Editable cells — use data-raw for reliable recalculate
+  document.getElementById('tableBody').innerHTML = rows.map(r => `
+    <tr data-denom="${r.denom}">
+      <td>${r.label}</td>
+      <td><span class="editable" contenteditable="true" data-field="opening" data-raw="${r.opening}">${r.opening}</span></td>
+      <td><span class="editable" contenteditable="true" data-field="dep"     data-raw="${r.dep}">${r.dep}</span></td>
+      <td><span class="editable" contenteditable="true" data-field="dis"     data-raw="${r.dis}">${r.dis}</span></td>
+      <td><span class="editable" contenteditable="true" data-field="rem"     data-raw="${r.rem}">${r.rem}</span></td>
+      <td><span class="editable" contenteditable="true" data-field="ex"      data-raw="${r.ex}">${r.ex}</span></td>
+      <td>${r.loading}</td>
+    </tr>`).join('');
+
+  document.getElementById('tOpening').textContent = fmt(tOpening);
+  document.getElementById('tDep').textContent     = fmt(tDep);
+  document.getElementById('tDis').textContent     = fmt(tDis);
+  document.getElementById('tRem').textContent     = fmt(tRem);
+  document.getElementById('tEx').textContent      = fmt(tEx);
+  document.getElementById('tLoading').textContent = fmt(tLoading);
+
+  updateBB(tRem, tEx);
+  show('resultWrap');
+  show('resetBar');
+  document.getElementById('balancesCard').classList.add('show');
+  document.getElementById('scanBtn').disabled = false;
+  document.getElementById('resultWrap').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// ── Recalculate ──
+function getVal(row, field) {
+  const el = row.querySelector(`[data-field="${field}"]`);
+  if (!el) return 0;
+  // Read typed content, strip everything except digits
+  const raw = (el.innerText || el.textContent || '').replace(/[^0-9]/g, '');
+  return parseInt(raw) || 0;
+}
+
+function recalculate() {
+  let tOpening=0, tDep=0, tDis=0, tRem=0, tEx=0;
+  document.querySelectorAll('#tableBody tr').forEach(row => {
+    const d = parseInt(row.dataset.denom) || 1;
+    tOpening += getVal(row, 'opening') * d;
+    tDep     += getVal(row, 'dep')     * d;
+    tDis     += getVal(row, 'dis')     * d;
+    tRem     += getVal(row, 'rem')     * d;
+    tEx      += getVal(row, 'ex')      * d;
+  });
+  document.getElementById('tOpening').textContent = fmt(tOpening);
+  document.getElementById('tDep').textContent     = fmt(tDep);
+  document.getElementById('tDis').textContent     = fmt(tDis);
+  document.getElementById('tRem').textContent     = fmt(tRem);
+  document.getElementById('tEx').textContent      = fmt(tEx);
+  updateBB(tRem, tEx);
+}
+
+function updateBB(tRem, tEx) {
+  const bb = tRem + tEx;
+  currentBroughtBack = bb;
+  document.getElementById('bbCalc').innerHTML =
+    `<span class="eq">Brought Back</span>  =  ${fmt(tRem)}  +  ${fmt(tEx)}<br>` +
+    `<span class="bb-divider">──────────────────────────</span><br>` +
+    `<span class="eq">= ${fmt(bb)}</span>`;
+  document.getElementById('bbValue').textContent = '₹' + fmt(bb);
+  document.getElementById('bbNote').textContent  = tEx > 0
+    ? `Including Excess ₹${fmt(tEx)}`
+    : 'No Excess';
+}
+
+// ── Switch & GL Balances ──
+function calcBalances() {
+  const switchBal = parseInt(document.getElementById('switchBal').value) || 0;
+  const glBal     = parseInt(document.getElementById('glBal').value)     || 0;
+  const physical  = currentBroughtBack;
+
+  if (!switchBal && !glBal) {
+    alert('Please enter Switch Balance and GL Balance first.');
+    return;
+  }
+
+  // GL vs Physical = GL - Physical → positive = short, negative = excess
+  const glVsPhysical = glBal - physical;
+  // Switch vs GL = Switch - GL
+  const switchVsGL = switchBal - glBal;
+
+  const grid = document.getElementById('trafficGrid');
+  grid.style.display = 'flex';
+  grid.innerHTML = '';
+
+  // GL vs Physical
+  grid.appendChild(trafficItem(
+    'GL vs Physical',
+    glVsPhysical,
+    glVsPhysical === 0 ? 'Balanced' : glVsPhysical > 0 ? 'Short' : 'Excess'
+  ));
+
+  // Switch vs GL
+  grid.appendChild(trafficItem(
+    'Switch vs GL',
+    switchVsGL,
+    switchVsGL === 0 ? 'Balanced' : switchVsGL > 0 ? 'Short' : 'Excess'
+  ));
+
+  // Physical (Brought Back)
+  grid.appendChild(trafficItem(
+    'Physical (Brought Back)',
+    physical,
+    'Actual',
+    true
+  ));
+}
+
+function trafficItem(label, value, badge, isNeutral = false) {
+  const div = document.createElement('div');
+  let colorClass = 'green';
+  if (!isNeutral) {
+    if (value > 0) colorClass = 'red';      // short
+    else if (value < 0) colorClass = 'amber'; // excess
+    else colorClass = 'green';               // balanced
+  }
+  div.className = `traffic-item ${colorClass}`;
+  div.innerHTML = `
+    <div>
+      <div class="traffic-label">${label}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="traffic-value">₹${fmt(Math.abs(value))}</div>
+      <div class="traffic-badge">${badge}</div>
+    </div>`;
+  return div;
+}
+
+// ── Helpers ──
+function fmt(n) { return Number(n).toLocaleString('en-IN'); }
+
+function fmtDate(str) {
+  try {
+    const d = new Date(str);
+    if (isNaN(d)) return str;
+    return String(d.getDate()).padStart(2,'0') + '/' +
+           String(d.getMonth()+1).padStart(2,'0') + '/' +
+           String(d.getFullYear()).slice(-2);
+  } catch { return str; }
+}
+
+function show(id) { document.getElementById(id).classList.add('show'); }
+function hide(id) { document.getElementById(id).classList.remove('show'); }
+function showError(msg) {
+  const e = document.getElementById('errorBox');
+  e.textContent = msg; e.classList.add('show');
+}
+
+function resetAll() {
+  imageBase64 = ''; pendingData = null; currentBroughtBack = 0;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('uploadZone').style.display = '';
+  document.getElementById('previewRow').classList.remove('show');
+  ['excess100','excess500','excess200'].forEach(id => document.getElementById(id).value = '0');
+  ['switchBal','glBal'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('trafficGrid').style.display = 'none';
+  document.getElementById('balancesCard').classList.remove('show');
+  hide('resultWrap'); hide('resetBar'); hide('errorBox'); hide('processing');
+  document.getElementById('scanBtn').disabled = false;
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+</script>
+</body>
+</html>
