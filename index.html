@@ -373,7 +373,9 @@ zone.addEventListener('drop', e => {
 function handleFile(file) {
   if (!file) return;
   // Compress image before storing — mobile photos can be 5-10MB
-  compressImage(file, 1200, 0.82).then(({ base64, mime }) => {
+  // Mobile photos can be 8MB+ — compress aggressively
+  const maxPx = window.innerWidth < 768 ? 800 : 1000;
+  compressImage(file, maxPx, 0.72).then(({ base64, mime }) => {
     imageBase64 = base64;
     imageMime = mime;
     document.getElementById('previewImg').src = `data:${mime};base64,${base64}`;
@@ -392,7 +394,6 @@ function compressImage(file, maxSize, quality) {
     reader.onload = e => {
       const img = new Image();
       img.onload = () => {
-        // Calculate new dimensions keeping aspect ratio
         let w = img.width, h = img.height;
         if (w > maxSize || h > maxSize) {
           if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
@@ -401,13 +402,16 @@ function compressImage(file, maxSize, quality) {
         const canvas = document.createElement('canvas');
         canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext('2d');
+        // White background before drawing (avoids transparency issues)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
         ctx.drawImage(img, 0, 0, w, h);
-        // Always output as jpeg for compatibility
         const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        resolve({
-          base64: dataUrl.split(',')[1],
-          mime: 'image/jpeg'
-        });
+        const base64 = dataUrl.split(',')[1];
+        // Log size for debugging
+        const sizeKB = Math.round(base64.length * 0.75 / 1024);
+        console.log(`Compressed image: ${w}x${h}, ~${sizeKB}KB`);
+        resolve({ base64, mime: 'image/jpeg' });
       };
       img.src = e.target.result;
     };
@@ -443,9 +447,22 @@ async function scanReceipt() {
     });
 
     clearInterval(timer);
+
+    // Check if response is JSON (Vercel body limit errors return HTML)
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+      throw new Error('Image too large — please try a closer/clearer photo (Status ' + res.status + ')');
+    }
+
     const data = await res.json();
 
-    if (!res.ok) throw new Error(data.error || 'Server error ' + res.status);
+    if (!res.ok) {
+      // Rate limit
+      if (res.status === 429 || JSON.stringify(data).toLowerCase().includes('rate')) {
+        throw new Error('Rate limit reached. Please wait 60 seconds and try again.');
+      }
+      throw new Error(data.error || 'Server error ' + res.status);
+    }
 
     pendingData = data;
     hide('processing');
@@ -454,7 +471,7 @@ async function scanReceipt() {
   } catch (err) {
     clearInterval(timer);
     hide('processing');
-    showError('Error: ' + err.message + '\n\nMake sure the app is deployed on Vercel with MISTRAL_API_KEY set.');
+    showError('⚠ ' + (err.message || 'Unknown error occurred.'));
     document.getElementById('scanBtn').disabled = false;
   }
 }
