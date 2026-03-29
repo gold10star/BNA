@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BNA Reconciliation — IOB Ashok Nagar</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0c0e0d; --surface: #141614; --surface2: #1c1f1c;
+  --border: #2a2d2a; --border2: #363a36;
+  --accent: #00c896; --accent-dim: #00c89620; --accent2: #4db8ff;
+  --text: #e2e8e2; --muted: #5a6060; --muted2: #3a3f3a;
+  --warn: #f0a500; --danger: #ff5555;
+  --mono: 'IBM Plex Mono', monospace; --sans: 'IBM Plex Sans', sans-serif;
+}
+body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; padding: 0 0 80px; }
+body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px); pointer-events:none; z-index:0; }
+.wrap { max-width: 780px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+
+/* Header */
+.header { padding: 28px 0 22px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.header-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+.header-title { font-size: 26px; font-weight: 300; letter-spacing: -0.5px; }
+.header-title span { font-weight: 600; }
+.header-right { font-family: var(--mono); font-size: 10px; color: var(--muted); text-align: right; line-height: 1.7; }
+.dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--accent); margin-right:5px; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Sections */
+.section { margin-top: 24px; }
+.section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+.section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* Card */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 20px; }
+.api-row { display: flex; gap: 10px; }
+.api-input { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:11px 14px; color:var(--text); font-family:var(--mono); font-size:13px; outline:none; transition:border-color 0.2s; min-width:0; }
+.api-input:focus { border-color: var(--accent); }
+.api-input::placeholder { color: var(--muted); }
+.btn { background:var(--accent); color:#000; border:none; border-radius:4px; padding:11px 20px; font-family:var(--mono); font-size:12px; font-weight:600; cursor:pointer; letter-spacing:0.04em; transition:opacity 0.15s, transform 0.1s; white-space:nowrap; }
+.btn:hover { opacity:0.88; }
+.btn:active { transform:scale(0.97); }
+.btn:disabled { opacity:0.4; cursor:not-allowed; }
+.btn-outline { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+.btn-outline:hover { background:var(--accent-dim); }
+.api-status { font-family:var(--mono); font-size:11px; margin-top:8px; height:16px; }
+.api-status.ok { color:var(--accent); }
+.api-status.err { color:var(--danger); }
+
+/* Upload */
+.upload-zone { background:var(--surface); border:1px dashed var(--border2); border-radius:6px; padding:40px 24px; text-align:center; cursor:pointer; transition:border-color 0.2s,background 0.2s; position:relative; }
+.upload-zone:hover, .upload-zone.drag { border-color:var(--accent); background:#0c1612; }
+.upload-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.upload-icon { width:48px; height:48px; border:1px solid var(--border2); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 14px; font-size:20px; color:var(--muted); transition:border-color 0.2s,color 0.2s; }
+.upload-zone:hover .upload-icon { border-color:var(--accent); color:var(--accent); }
+.upload-title { font-size:15px; font-weight:400; margin-bottom:5px; }
+.upload-sub { font-family:var(--mono); font-size:11px; color:var(--muted); }
+
+/* Preview */
+.preview-wrap { display:none; background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:16px; gap:16px; align-items:flex-start; }
+.preview-wrap.show { display:flex; }
+.preview-img { width:120px; min-width:120px; height:150px; object-fit:cover; border-radius:4px; border:1px solid var(--border); }
+.preview-info { flex:1; }
+.preview-name { font-family:var(--mono); font-size:12px; color:var(--accent); margin-bottom:6px; word-break:break-all; }
+.preview-hint { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:14px; }
+.extras-row { display:flex; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
+.field { display:flex; flex-direction:column; gap:5px; flex:1; min-width:130px; }
+.field label { font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
+.field input { background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:9px 12px; color:var(--text); font-family:var(--mono); font-size:13px; outline:none; transition:border-color 0.2s; }
+.field input:focus { border-color:var(--accent); }
+.field input::placeholder { color:var(--muted2); }
+.btn-scan { width:100%; padding:13px; font-size:13px; letter-spacing:0.06em; margin-top:4px; }
+
+/* Processing */
+.processing { display:none; text-align:center; padding:32px; background:var(--surface); border:1px solid var(--border); border-radius:6px; }
+.processing.show { display:block; }
+.spinner { width:32px; height:32px; border:2px solid var(--border2); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 14px; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.processing-text { font-family:var(--mono); font-size:12px; color:var(--muted); }
+.processing-step { font-size:13px; color:var(--text); margin-top:6px; }
+
+/* Result */
+.result-wrap { display:none; background:var(--surface); border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+.result-wrap.show { display:block; }
+.result-header { background:var(--surface2); border-bottom:1px solid var(--border); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; }
+.result-date { font-family:var(--mono); font-size:13px; font-weight:600; color:var(--accent); }
+.result-atm { font-family:var(--mono); font-size:11px; color:var(--muted); }
+.btn-sm { padding:7px 14px; font-size:11px; }
+
+/* Table */
+.reg-table { width:100%; border-collapse:collapse; }
+.reg-table th { font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); text-align:right; padding:12px 16px 10px; border-bottom:1px solid var(--border); font-weight:400; }
+.reg-table th:first-child { text-align:left; }
+.reg-table td { font-family:var(--mono); font-size:13px; text-align:right; padding:11px 16px; border-bottom:1px solid var(--border); color:var(--text); }
+.reg-table td:first-child { text-align:left; font-weight:500; color:var(--accent2); }
+.reg-table tr:last-child td { border-bottom:none; }
+.reg-table .total-row td { font-weight:600; font-size:13px; color:var(--text); background:var(--surface2); border-top:1px solid var(--border2); border-bottom:1px solid var(--border2); }
+.reg-table .total-row td:first-child { color:var(--muted); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; }
+
+/* Brought back */
+.brought-back { padding:20px; border-top:1px solid var(--border); }
+.bb-calc { font-family:var(--mono); font-size:13px; color:var(--muted); line-height:2; }
+.bb-calc .eq { color:var(--text); }
+.bb-final { display:flex; align-items:baseline; justify-content:space-between; margin-top:14px; padding-top:14px; border-top:2px solid var(--border2); }
+.bb-label { font-family:var(--mono); font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); }
+.bb-value { font-family:var(--mono); font-size:22px; font-weight:600; color:var(--accent); letter-spacing:-0.5px; }
+.bb-note { font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:4px; text-align:right; }
+
+/* Error */
+.error-box { display:none; background:#1a0a0a; border:1px solid #3a1515; border-radius:6px; padding:16px 20px; font-family:var(--mono); font-size:12px; color:var(--danger); line-height:1.6; white-space:pre-wrap; }
+.error-box.show { display:block; }
+.reset-bar { display:none; margin-top:16px; text-align:center; }
+.reset-bar.show { display:block; }
+
+@media print {
+  body { background:#fff; color:#000; padding:20px; }
+  body::before { display:none; }
+  .header, .section:not(.result-section) { display:none !important; }
+  .result-wrap { display:block !important; border:none; }
+  .result-actions, .reset-bar { display:none !important; }
+  .reg-table th, .reg-table td { color:#000 !important; border-color:#ccc !important; background:#fff !important; }
+  .result-header { background:#f5f5f5 !important; }
+  .result-date { color:#000 !important; }
+  .result-atm { color:#555 !important; }
+  .bb-value { color:#000 !important; }
+  .bb-calc { color:#555 !important; }
+  .bb-calc .eq { color:#000 !important; }
+  .brought-back { border-top:1px solid #ccc !important; }
+}
+@media (max-width:500px) {
+  .header { flex-direction:column; align-items:flex-start; }
+  .header-right { text-align:left; }
+  .preview-wrap { flex-direction:column; }
+  .preview-img { width:100%; height:180px; }
+  .bb-value { font-size:18px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div>
+      <div class="header-eyebrow">Indian Overseas Bank · Ashok Nagar</div>
+      <div class="header-title" onclick="tapTitle()" style="cursor:default">BNA <span>Reconciliation</span></div>
+    </div>
+    <div class="header-right">
+      <span class="dot"></span>OpenRouter Powered<br>
+      ATM ID: IOBC1689<br>
+      Opening: ₹3,00,000 fixed
+    </div>
+  </div>
+
+  <!-- API Key (hidden — tap title 5x to reveal) -->
+  <div id="apiSection" style="display:none;margin-top:16px">
+    <div class="section-label">Gemini API Key</div>
+    <div class="card">
+      <div class="api-row">
+        <input class="api-input" id="apiKey" type="password" placeholder="Paste your OpenRouter API key (sk-or-...)">
+        <button class="btn" onclick="saveKey()">Save</button>
+      </div>
+      <div class="api-status" id="apiStatus"></div>
+    </div>
+  </div>
+
+  <!-- Upload -->
+  <div class="section">
+    <div class="section-label">Receipt Image</div>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])">
+      <div class="upload-icon">📄</div>
+      <div class="upload-title">Tap to upload receipt photo</div>
+      <div class="upload-sub">JPG · PNG · WEBP — from camera or gallery</div>
+    </div>
+
+    <div class="preview-wrap" id="previewWrap">
+      <img class="preview-img" id="previewImg" src="" alt="Receipt">
+      <div class="preview-info">
+        <div class="preview-name" id="previewName"></div>
+        <div class="preview-hint">Receipt loaded. Enter excess &amp; locally loaded notes if any, then tap Scan.</div>
+        <div class="extras-row">
+          <div class="field">
+            <label>Excess (₹500 notes)</label>
+            <input type="number" id="excessNotes" placeholder="e.g. 39" min="0">
+          </div>
+          <div class="field">
+            <label>Locally Loaded (₹500 notes)</label>
+            <input type="number" id="locallyNotes" placeholder="e.g. 600" min="0" value="600">
+          </div>
+        </div>
+        <button class="btn btn-scan" id="scanBtn" onclick="scanReceipt()">⟳ &nbsp;Scan &amp; Reconcile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Processing -->
+  <div class="processing" id="processing">
+    <div class="spinner"></div>
+    <div class="processing-text">Analysing receipt with AI Vision</div>
+    <div class="processing-step" id="processingStep">Reading cassette data...</div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- Result -->
+  <div class="section result-section">
+    <div class="result-wrap" id="resultWrap">
+      <div class="result-header">
+        <div>
+          <div class="result-date" id="resultDate">BNA — DD/MM/YY</div>
+          <div class="result-atm" id="resultAtm"></div>
+        </div>
+        <div class="result-actions">
+          <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 Print</button>
+        </div>
+      </div>
+      <table class="reg-table">
+        <thead>
+          <tr>
+            <th>Denom</th><th>Opening</th><th>Dep</th><th>Dis</th><th>Rem</th><th>Ex</th><th>Locally</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td>Totals</td>
+            <td id="tOpening"></td><td id="tDep"></td><td id="tDis"></td>
+            <td id="tRem"></td><td id="tEx"></td><td id="tLocally"></td>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="brought-back">
+        <div class="bb-calc" id="bbCalc"></div>
+        <div class="bb-final">
+          <div>
+            <div class="bb-label">Total Brought Back</div>
+            <div class="bb-note" id="bbNote"></div>
+          </div>
+          <div class="bb-value" id="bbValue"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reset-bar" id="resetBar">
+    <button class="btn btn-outline" onclick="resetAll()">↩ &nbsp;Scan Another Receipt</button>
+  </div>
+
+</div>
+
+<script>
+let imageBase64 = '', imageMime = 'image/jpeg';
+
+// Load saved key — prompt on first visit
+window.addEventListener('load', () => {
+  const k = localStorage.getItem('or_key');
+  if (k) {
+    document.getElementById('apiKey').value = k;
+  } else {
+    // First time — show key section automatically
+    document.getElementById('apiSection').style.display = 'block';
+    setStatus('Enter your Gemini API key to get started', 'ok');
+  }
+});
+
+// Tap title 5 times to reveal API key settings
+let tapCount = 0, tapTimer;
+function tapTitle() {
+  tapCount++;
+  clearTimeout(tapTimer);
+  tapTimer = setTimeout(() => { tapCount = 0; }, 2000);
+  if (tapCount >= 5) {
+    tapCount = 0;
+    const sec = document.getElementById('apiSection');
+    const isHidden = sec.style.display === 'none';
+    sec.style.display = isHidden ? 'block' : 'none';
+    if (isHidden) sec.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+// Drag & drop
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+
+function saveKey() {
+  const k = document.getElementById('apiKey').value.trim();
+  if (!k.startsWith('sk-or-')) { setStatus('✗ Invalid — key should start with sk-or-', 'err'); return; }
+  localStorage.removeItem('or_key');
+  localStorage.setItem('or_key', k);
+  setStatus('✓ Saved successfully', 'ok');
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('apiStatus');
+  el.textContent = msg; el.className = 'api-status ' + type;
+}
+
+function handleFile(file) {
+  if (!file) return;
+  imageMime = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = e.target.result;
+    imageBase64 = data.split(',')[1];
+    document.getElementById('previewImg').src = data;
+    document.getElementById('previewName').textContent = file.name;
+    document.getElementById('uploadZone').style.display = 'none';
+    document.getElementById('previewWrap').classList.add('show');
+    hide('resultWrap'); hide('resetBar'); hide('errorBox');
+  };
+  reader.readAsDataURL(file);
+}
+
+async function scanReceipt() {
+  const apiKey = localStorage.getItem('or_key') || document.getElementById('apiKey').value.trim();
+  if (!apiKey) { showError('Please save your Gemini API key first.'); return; }
+  if (!imageBase64) { showError('Please upload a receipt image first.'); return; }
+
+  const excessNotes  = parseInt(document.getElementById('excessNotes').value)  || 0;
+  const locallyNotes = parseInt(document.getElementById('locallyNotes').value) || 0;
+
+  show('processing'); hide('resultWrap'); hide('resetBar'); hide('errorBox');
+  document.getElementById('scanBtn').disabled = true;
+
+  const steps = ['Reading cassette data...','Identifying denominations...','Extracting loaded & remaining...','Building reconciliation...'];
+  let si = 0;
+  const stepEl = document.getElementById('processingStep');
+  const timer = setInterval(() => { si = (si+1) % steps.length; stepEl.textContent = steps[si]; }, 900);
+
+  const prompt = `You are a precise data extractor for Indian Overseas Bank ATM receipts.
+
+The receipt has cassette data in this exact format:
+CASSETTE   TYPE 1    TYPE 2
+LOADED       X         X
+DEPOSITED    X         X
+DISPENSED    X         X
+REMAINING    X         X
+
+CASSETTE   TYPE 3    TYPE 4
+LOADED       X         X
+DEPOSITED    X         X
+DISPENSED    X         X
+REMAINING    X         X
+
+Your task:
+- Read EACH row carefully for EACH type
+- Type 1 = ignore (always 0)
+- Type 2 = 100 rupee notes
+- Type 3 = 500 rupee notes
+- Type 4 = 200 rupee notes
+- Extract LOADED, DEPOSITED, DISPENSED, REMAINING for Type 2, Type 3, Type 4
+- Also extract date, ATM ID, REF NO
+
+IMPORTANT: Do NOT confuse rows. DEPOSITED and REMAINING are different rows. Read each value carefully.
+
+Return ONLY this JSON (no markdown, no explanation):
+{"date":"18 Sep 2025","atm_id":"IOBC1689","ref_no":"526111381053","type2":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0},"type3":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0},"type4":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0}}`;
+
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://bna-reconciliation.local',
+        'X-Title': 'BNA Reconciliation'
+      },
+      body: JSON.stringify({
+        model: 'openrouter/free',
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            { type: 'image_url', image_url: { url: `data:${imageMime};base64,${imageBase64}` } }
+          ]
+        }],
+        temperature: 0,
+        max_tokens: 512
+      })
+    });
+    clearInterval(timer);
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error?.message || 'OpenRouter API error ' + res.status);
+    const raw = json.choices?.[0]?.message?.content || '';
+    const cleaned = raw.replace(/```json|```/g, '').trim();
+    const data = JSON.parse(cleaned);
+    hide('processing');
+    renderResult(data, excessNotes, locallyNotes);
+  } catch (err) {
+    clearInterval(timer);
+    hide('processing');
+    showError('Error: ' + err.message + '\n\nCheck your API key and make sure the receipt image is clear.');
+    document.getElementById('scanBtn').disabled = false;
+  }
+}
+
+function renderResult(data, excessNotes, locallyNotes) {
+  const config = [
+    { key: 'type2', denom: 100,  label: '₹100',  openingNotes: 0,   locally: 0,            excess: 0            },
+    { key: 'type3', denom: 500,  label: '₹500',  openingNotes: 600, locally: locallyNotes, excess: excessNotes  },
+    { key: 'type4', denom: 200,  label: '₹200',  openingNotes: 0,   locally: 0,            excess: 0            }
+  ];
+
+  const rows = config.map(c => {
+    const r = data[c.key] || {};
+    return { ...c, dep: r.deposited||0, dis: r.dispensed||0, rem: r.remaining||0 };
+  });
+
+  const tOpening = 300000;
+  const tDep     = rows.reduce((s,r) => s + r.dep * r.denom, 0);
+  const tDis     = rows.reduce((s,r) => s + r.dis * r.denom, 0);
+  const tRem     = rows.reduce((s,r) => s + r.rem * r.denom, 0);
+  const tEx      = excessNotes * 500;
+  const tLocally = locallyNotes * 500;
+  const broughtBack = tRem + tEx;
+
+  // Header
+  document.getElementById('resultDate').textContent = 'BNA — ' + fmtDate(data.date || '');
+  document.getElementById('resultAtm').textContent  = `ATM ID: ${data.atm_id||'IOBC1689'} · REF: ${data.ref_no||'—'}`;
+
+  // Rows
+  document.getElementById('tableBody').innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.label}</td>
+      <td>${r.openingNotes > 0 ? r.openingNotes : '0'}</td>
+      <td>${r.dep}</td>
+      <td>${r.dis}</td>
+      <td>${r.rem}</td>
+      <td>${r.excess > 0 ? r.excess : '0'}</td>
+      <td>${r.locally > 0 ? r.locally : '0'}</td>
+    </tr>`).join('');
+
+  // Totals
+  document.getElementById('tOpening').textContent = fmt(tOpening);
+  document.getElementById('tDep').textContent     = fmt(tDep);
+  document.getElementById('tDis').textContent     = fmt(tDis);
+  document.getElementById('tRem').textContent     = fmt(tRem);
+  document.getElementById('tEx').textContent      = fmt(tEx);
+  document.getElementById('tLocally').textContent = fmt(tLocally);
+
+  // Brought back
+  const hasEx = tEx > 0;
+  document.getElementById('bbCalc').innerHTML =
+    `<span class="eq">Brought Back</span> = ${fmt(tRem)} + ${fmt(tEx)}<br>` +
+    `<span style="color:var(--border2)">────────────────────────</span><br>` +
+    `<span class="eq">= ${fmt(broughtBack)}</span>`;
+  document.getElementById('bbValue').textContent = '₹' + fmt(broughtBack);
+  document.getElementById('bbNote').textContent  = hasEx ? `(Including Excess of ₹${fmt(tEx)})` : '(No Excess)';
+
+  show('resultWrap'); show('resetBar');
+  document.getElementById('scanBtn').disabled = false;
+  document.getElementById('resultWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function fmt(n) { return Number(n).toLocaleString('en-IN'); }
+
+function fmtDate(str) {
+  try {
+    const d = new Date(str);
+    if (isNaN(d)) return str;
+    return String(d.getDate()).padStart(2,'0') + '/' +
+           String(d.getMonth()+1).padStart(2,'0') + '/' +
+           String(d.getFullYear()).slice(-2);
+  } catch { return str; }
+}
+
+function show(id) { document.getElementById(id).classList.add('show'); }
+function hide(id) { document.getElementById(id).classList.remove('show'); }
+function showError(msg) { const e = document.getElementById('errorBox'); e.textContent = msg; e.classList.add('show'); }
+
+function resetAll() {
+  imageBase64 = '';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('uploadZone').style.display = '';
+  document.getElementById('previewWrap').classList.remove('show');
+  document.getElementById('excessNotes').value = '';
+  document.getElementById('locallyNotes').value = '600';
+  hide('resultWrap'); hide('resetBar'); hide('errorBox'); hide('processing');
+  document.getElementById('scanBtn').disabled = false;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
