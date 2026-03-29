@@ -305,7 +305,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 
 <script>
 // ── CONFIG — API key hidden from UI ──
-const MISTRAL_KEY = 'UIDlkpbZSLx7F203MzejqsHzU7IImkaG';
+
 
 let imageBase64 = '';
 let pendingData = null, pendingEx100 = 0, pendingEx500 = 0, pendingEx200 = 0;
@@ -371,26 +371,16 @@ Return ONLY valid JSON, no markdown:
 {"date":"DD Mon YYYY","atm_id":"IOBC1689","ref_no":"XXXXX","type2":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0},"type3":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0},"type4":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0}}`;
 
   try {
-    const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${MISTRAL_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'pixtral-12b-2409',
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image_url', image_url: `data:image/jpeg;base64,${imageBase64}` },
-            { type: 'text', text: prompt }
-          ]
-        }],
-        temperature: 0,
-        max_tokens: 1024
-      })
-    });
-
+const res = await fetch('/api/scan', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    imageBase64,
+    prompt
+  })
+});
     clearInterval(timer);
     const json = await res.json();
     if (!res.ok) throw new Error(json.error?.message || json.message || 'API error ' + res.status);
