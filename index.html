@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BNA Auto Reconciliation</title>
+<title>ATM/BNA Auto Reconciliation</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -223,7 +223,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   <!-- Print-only elements -->
   <div class="print-only" style="display:none">
     <div class="print-header">
-      <h1>BNA AUTO RECONCILIATION APP</h1>
+      <h1>ATM/BNA AUTO RECONCILIATION APP</h1>
       <p id="printMeta"></p>
     </div>
     <div class="print-layout">
@@ -236,7 +236,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 
   <!-- Header -->
   <div class="header">
-    <div class="header-title">BNA <span>Auto Reconciliation</span></div>
+    <div class="header-title">ATM/BNA <span>Auto Reconciliation</span></div>
   </div>
 
   <!-- Instructions -->
@@ -251,19 +251,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
         <p>Take a clear photo of the Host Total Receipt from the ATM/BNA machine and upload it.</p>
       </div>
       <div class="inst-section">
-        <h4>Step 2 — Machine Detection</h4>
-        <p>The app automatically detects the machine type from the ATM ID on the receipt:</p>
-        <ul>
-          <li><span class="inst-badge badge-bna">BNA</span> IOBC prefix — Cash Recycler (deposit + dispense)</li>
-          <li><span class="inst-badge badge-atm">ATM</span> IOBD prefix — ATM (dispense only)</li>
-        </ul>
-      </div>
-      <div class="inst-section">
-        <h4>Step 3 — Excess Notes (BNA only)</h4>
-        <p>If any excess notes were found physically, enter the count per denomination before scanning.</p>
-      </div>
-      <div class="inst-section">
-        <h4>Step 4 — Loading Details</h4>
+        <h4>Step 2 — Loading Details</h4>
         <p>After scanning, enter the notes loaded into each cassette today.</p>
       </div>
       <div class="inst-section">
@@ -290,13 +278,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
       <img class="preview-thumb" id="previewImg" src="" alt="">
       <div class="preview-meta">
         <div class="preview-name" id="previewName"></div>
-        <div class="preview-hint">Enter excess notes if any (BNA only), then tap Scan.</div>
-        <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Excess Notes (BNA only)</div>
-        <div class="fields-grid" style="margin-bottom:14px">
-          <div class="field"><label>₹100</label><input type="number" id="excess100" placeholder="0" min="0" value="0"></div>
-          <div class="field"><label>₹500</label><input type="number" id="excess500" placeholder="0" min="0" value="0"></div>
-          <div class="field"><label>₹200</label><input type="number" id="excess200" placeholder="0" min="0" value="0"></div>
-        </div>
+        <div class="preview-hint">Tap Scan to read the receipt. If there is any excess, edit directly in the table after scanning.</div>
         <button class="btn btn-block" id="scanBtn" onclick="scanReceipt()">⟳ &nbsp;Scan &amp; Reconcile</button>
       </div>
     </div>
@@ -319,10 +301,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
         <div class="result-date" id="resultDate">—</div>
         <div class="result-ref" id="resultRef"></div>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <div class="machine-badge" id="machineBadge"><span class="machine-dot"></span><span id="machineLabel">—</span></div>
-        <button class="btn btn-outline btn-sm" onclick="doPrint()">🖨 Print</button>
-      </div>
+      <button class="btn btn-outline btn-sm" onclick="doPrint()">🖨 Print</button>
     </div>
     <div class="table-wrap">
       <table class="reg-table" id="regTable">
@@ -332,7 +311,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
       </table>
     </div>
     <div class="brought-back">
-      <div class="warn-tip">⚠ Tap any value to edit — Remaining auto-adjusts live · tap Recalculate to refresh totals</div>
+      <div class="warn-tip">⚠ Tap any value to edit · tap Recalculate to refresh totals</div>
       <div class="bb-calc" id="bbCalc"></div>
       <div class="bb-final">
         <div>
@@ -446,11 +425,8 @@ function compressImage(file, maxSize, quality) {
 // ── Scan ──
 async function scanReceipt() {
   if (!imageBase64) { showError('Please upload a receipt image first.'); return; }
-  pendingEx = {
-    ex100: parseInt(document.getElementById('excess100').value) || 0,
-    ex500: parseInt(document.getElementById('excess500').value) || 0,
-    ex200: parseInt(document.getElementById('excess200').value) || 0
-  };
+  // Excess removed from UI — edit directly in table if needed
+  pendingEx = { ex100: 0, ex500: 0, ex200: 0 };
   show('processing'); hide('resultWrap'); hide('resetBar'); hide('errorBox');
   document.getElementById('balancesCard').classList.remove('show');
   document.getElementById('scanBtn').disabled = true;
@@ -507,13 +483,10 @@ function renderResult(data, ex, loading) {
   currentMachineType = mt;
   const isBNA = mt === 'BNA';
 
-  // Machine badge
-  const badge = document.getElementById('machineBadge');
-  badge.className = 'machine-badge ' + (isBNA ? 'bna' : 'atm');
-  document.getElementById('machineLabel').textContent = isBNA ? 'BNA — Cash Recycler' : 'ATM — Dispense Only';
+  // Machine type stored in state only (badge removed from UI)
 
   // Header
-  const dateStr = 'BNA — ' + fmtDate(data.date||'');
+  const dateStr = mt + ' — ' + fmtDate(data.date||'');
   const refStr  = `ATM: ${data.atm_id||'—'} · REF: ${data.ref_no||'—'}`;
   document.getElementById('resultDate').textContent = dateStr;
   document.getElementById('resultRef').textContent  = refStr;
@@ -548,7 +521,7 @@ function renderResult(data, ex, loading) {
         <td><span class="editable" contenteditable="true" data-field="dis" oninput="autoAdjustRem(this)">${r.dis}</span></td>
         <td><span class="editable" contenteditable="true" data-field="rem">${r.rem}</span></td>
         <td><span class="editable" contenteditable="true" data-field="ex">${r.ex}</span></td>
-        <td>${r.loading}</td>
+        <td><span class="editable" contenteditable="true" data-field="loading">${r.loading}</span></td>
       </tr>`).join('');
 
     const tOpening = rows.reduce((s,r) => s + r.opening * r.denom, 0);
@@ -572,17 +545,16 @@ function renderResult(data, ex, loading) {
 
   } else {
     // ATM: Type1=₹100, Type2=₹500, Type3=₹200, Type4=₹500
+    // ATM: combine Type2 + Type4 (both ₹500) into single row
+    const t1 = data.type1||{}, t2atm = data.type2||{}, t3atm = data.type3||{}, t4atm = data.type4||{};
     rows = [
-      { label:'₹100', denom:100, t:data.type1||{} },
-      { label:'₹500', denom:500, t:data.type2||{}, tag:'(C2)' },
-      { label:'₹200', denom:200, t:data.type3||{} },
-      { label:'₹500', denom:500, t:data.type4||{}, tag:'(C4)' }
-    ].map(r => ({
-      ...r,
-      opening: r.t.loaded||0,
-      dis: r.t.dispensed||0,
-      rem: r.t.remaining||0
-    }));
+      { label:'₹100', denom:100, opening:t1.loaded||0, dis:t1.dispensed||0, rem:t1.remaining||0 },
+      { label:'₹500', denom:500,
+        opening:(t2atm.loaded||0)+(t4atm.loaded||0),
+        dis:(t2atm.dispensed||0)+(t4atm.dispensed||0),
+        rem:(t2atm.remaining||0)+(t4atm.remaining||0) },
+      { label:'₹200', denom:200, opening:t3atm.loaded||0, dis:t3atm.dispensed||0, rem:t3atm.remaining||0 }
+    ];
 
     // ATM Table header — no Deposited, no Excess
     document.getElementById('tableHead').innerHTML = `<tr>
@@ -591,16 +563,15 @@ function renderResult(data, ex, loading) {
 
     document.getElementById('tableBody').innerHTML = rows.map((r,i) => `
       <tr data-denom="${r.denom}" data-idx="${i}" data-machine="ATM">
-        <td>${r.label}${r.tag ? ' <span style="font-size:9px;color:var(--muted)">'+r.tag+'</span>' : ''}</td>
+        <td>${r.label}</td>
         <td><span class="editable" contenteditable="true" data-field="opening">${r.opening}</span></td>
         <td><span class="editable" contenteditable="true" data-field="dis" oninput="autoAdjustRem(this)">${r.dis}</span></td>
         <td><span class="editable" contenteditable="true" data-field="rem">${r.rem}</span></td>
-        <td>0</td>
+        <td><span class="editable" contenteditable="true" data-field="loading">0</span></td>
       </tr>`).join('');
 
     const tOpening = rows.reduce((s,r) => s + r.opening * r.denom, 0);
     const tDis     = rows.reduce((s,r) => s + r.dis     * r.denom, 0);
-    // Combine both ₹500 rows for remaining total
     const tRem     = rows.reduce((s,r) => s + r.rem     * r.denom, 0);
 
     document.getElementById('tableFoot').innerHTML = `<tr class="total-row">
@@ -654,13 +625,15 @@ function getElVal(el) {
 
 function recalculate() {
   const isBNA = currentMachineType === 'BNA';
-  let tOpening=0, tDep=0, tDis=0, tRem=0, tEx=0;
+  let tOpening=0, tDep=0, tDis=0, tRem=0, tEx=0, tLoading=0;
 
   document.querySelectorAll('#tableBody tr').forEach(row => {
     const d = parseInt(row.dataset.denom) || 1;
     tOpening += getElVal(row.querySelector('[data-field="opening"]')) * d;
     tDis     += getElVal(row.querySelector('[data-field="dis"]'))     * d;
     tRem     += getElVal(row.querySelector('[data-field="rem"]'))     * d;
+    const loadingEl = row.querySelector('[data-field="loading"]');
+    tLoading += getElVal(loadingEl) * d;
     if (isBNA) {
       tDep += getElVal(row.querySelector('[data-field="dep"]')) * d;
       tEx  += getElVal(row.querySelector('[data-field="ex"]'))  * d;
@@ -670,6 +643,7 @@ function recalculate() {
   document.getElementById('tOpening').textContent = fmt(tOpening);
   document.getElementById('tDis').textContent     = fmt(tDis);
   document.getElementById('tRem').textContent     = fmt(tRem);
+  if (document.getElementById('tLoading')) document.getElementById('tLoading').textContent = fmt(tLoading);
   if (isBNA) {
     document.getElementById('tDep').textContent = fmt(tDep);
     document.getElementById('tEx').textContent  = fmt(tEx);
@@ -735,12 +709,25 @@ function doPrint() {
   dc.innerHTML = '';
   const rw = document.getElementById('resultWrap');
   const bc = document.getElementById('balancesCard');
-  dc.appendChild(rw.cloneNode(true));
-  if (bc.classList.contains('show')) dc.appendChild(bc.cloneNode(true));
+  // Clone result into print column
+  const rwClone = rw.cloneNode(true);
+  // Remove print button from clone to avoid nested print buttons
+  rwClone.querySelectorAll('.btn-outline').forEach(b => b.remove());
+  dc.appendChild(rwClone);
+  if (bc.classList.contains('show')) {
+    const bcClone = bc.cloneNode(true);
+    bcClone.querySelectorAll('button,.field').forEach(b => b.remove());
+    dc.appendChild(bcClone);
+  }
+  // Show print layout, hide screen result during print
   document.querySelector('.print-only').style.display = 'block';
+  rw.style.display = 'none';
+  bc.style.display = 'none';
   window.print();
   setTimeout(() => {
     document.querySelector('.print-only').style.display = 'none';
+    rw.style.display = '';
+    bc.style.display = '';
     dc.innerHTML = '';
   }, 1500);
 }
@@ -763,7 +750,7 @@ function resetAll() {
   document.getElementById('fileInput').value='';
   document.getElementById('uploadZone').style.display='';
   document.getElementById('previewRow').classList.remove('show');
-  ['excess100','excess500','excess200'].forEach(id=>document.getElementById(id).value='0');
+  // Excess fields removed from UI
   ['switchBal','glBal'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('trafficGrid').style.display='none';
   document.getElementById('balancesCard').classList.remove('show');
