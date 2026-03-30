@@ -623,8 +623,8 @@ function calcBalances() {
   const grid = document.getElementById('trafficGrid');
   grid.style.display = 'flex'; grid.innerHTML = '';
   grid.appendChild(mkTraffic('Physical Balance', phy, 'Actual', true));
-  grid.appendChild(mkTraffic('Physical vs GL',     pvg, pvg===0?'Balanced':pvg>0?'Excess':'Short'));
-  grid.appendChild(mkTraffic('Physical vs Switch', pvs, pvs===0?'Balanced':pvs>0?'Excess':'Short'));
+  grid.appendChild(mkTraffic('Physical vs GL',     pvg, pvg===0?'Tallied':pvg>0?'Excess':'Short'));
+  grid.appendChild(mkTraffic('Physical vs Switch', pvs, pvs===0?'Tallied':pvs>0?'Excess':'Short'));
 }
 
 function mkTraffic(label, value, badge, neutral=false) {
