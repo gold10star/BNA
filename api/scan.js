@@ -7,13 +7,34 @@ export default async function handler(req, res) {
   const MISTRAL_KEY = process.env.MISTRAL_API_KEY;
   if (!MISTRAL_KEY) return res.status(500).json({ error: 'API key not configured' });
 
-  const prompt = `You are extracting data from an Indian Overseas Bank ATM/BNA Host Total receipt.
+  const prompt = `You are validating and extracting data from an Indian Overseas Bank (IOB) ATM/BNA Host Total receipt.
 
 The receipt may be rotated — read in any orientation.
 
+== STEP 1: VALIDATE FIRST ==
+Before extracting anything, check if this image is a genuine IOB ATM/BNA Host Total receipt.
+
+A valid receipt MUST have ALL of the following:
+- An ATM ID field starting with "IOBC" (BNA) or "IOBD" (ATM)
+- A REF NO field
+- Cassette TYPE blocks (TYPE 1, TYPE 2, TYPE 3, TYPE 4) with rows like LOADED, DISPENSED, REMAINING
+- Numeric cassette values in those rows
+
+If the image is NOT a valid IOB Host Total receipt (e.g. it is a random photo, a different bank's receipt, a transaction slip, a selfie, a document, blank, blurry/unreadable, or missing the required fields), return ONLY this JSON:
+{"valid":false,"reason":"<one short sentence describing why it was rejected>"}
+
+Examples of rejection reasons:
+- "This appears to be a transaction receipt, not a Host Total report."
+- "No IOB ATM ID (IOBC/IOBD) was detected in the image."
+- "The image is too blurry or unclear to read."
+- "This does not appear to be an ATM/BNA receipt."
+- "The cassette TYPE blocks with LOADED/DISPENSED/REMAINING rows are missing."
+
+== STEP 2: EXTRACT (only if valid) ==
+
 MACHINE TYPE DETECTION:
-- Look for ATM ID field. If it starts with "IOBC" → machine_type = "BNA"
-- If ATM ID starts with "IOBD" → machine_type = "ATM"
+- ATM ID starts with "IOBC" → machine_type = "BNA"
+- ATM ID starts with "IOBD" → machine_type = "ATM"
 
 For BNA (IOBC): TWO cassette blocks with TYPE 1, TYPE 2 (block 1) and TYPE 3, TYPE 4 (block 2).
 Each type has rows: LOADED, DEPOSITED, DISPENSED, REMAINING
@@ -33,8 +54,8 @@ Extract: date (e.g. "09 May 2024"), ATM ID, REF NO, machine_type.
 For each type extract: loaded, deposited (0 if ATM), dispensed, remaining as integers.
 Do NOT mix up TYPE columns or rows.
 
-Return ONLY valid JSON no markdown:
-{"machine_type":"BNA","date":"DD Mon YYYY","atm_id":"IOBC1689","ref_no":"XXXXX","type1":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0},"type2":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0},"type3":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0},"type4":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0}}`;
+Return ONLY valid JSON, no markdown:
+{"valid":true,"machine_type":"BNA","date":"DD Mon YYYY","atm_id":"IOBC1689","ref_no":"XXXXX","type1":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0},"type2":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0},"type3":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0},"type4":{"loaded":0,"deposited":0,"dispensed":0,"remaining":0}}`;
 
   const callMistral = async () => fetch('https://api.mistral.ai/v1/chat/completions', {
     method: 'POST',
@@ -59,7 +80,14 @@ Return ONLY valid JSON no markdown:
       return res.status(r.status).json({ error: msg });
     }
     const raw = (json.choices?.[0]?.message?.content || '').replace(/```json|```/g, '').trim();
-    try { return res.status(200).json(JSON.parse(raw)); }
+    try {
+      const parsed = JSON.parse(raw);
+      // Validation failed — AI rejected the image
+      if (parsed.valid === false) {
+        return res.status(422).json({ error: 'invalid_receipt', reason: parsed.reason || 'This does not appear to be a valid IOB Host Total receipt.' });
+      }
+      return res.status(200).json(parsed);
+    }
     catch { return res.status(500).json({ error: 'Could not parse AI response. Try again.', raw }); }
   } catch (err) {
     return res.status(500).json({ error: err.message });
