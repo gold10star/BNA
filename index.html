@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ATM/BNA Auto Reconciliation</title>
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="/manifest.json">
+
+<!-- Theme & Status Bar -->
+<meta name="theme-color" content="#00c896">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- iOS PWA Support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BNA Recon">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144.png">
+
+<!-- Favicons -->
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="96x96"   href="/icons/icon-96.png">
+
+<!-- SEO / Share -->
+<meta name="description" content="ATM and BNA machine cash reconciliation for bank operations staff.">
+<meta name="application-name" content="BNA Recon">
+
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<!-- SheetJS for Excel Export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0e0d;--surface:#141614;--surface2:#1c1f1c;
+  --border:#2a2d2a;--border2:#363a36;
+  --accent:#00c896;--accent-dim:#00c89615;--accent2:#4db8ff;
+  --text:#e2e8e2;--muted:#5a6060;--muted2:#2e3330;
+  --warn:#f0a500;--danger:#ff5555;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  --radius:8px
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;padding:0 0 60px;padding-bottom:calc(60px + env(safe-area-inset-bottom));padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+
+/* Header */
+.header{padding:24px 0 16px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.header-title{font-size:22px;font-weight:300;letter-spacing:-0.5px}
+.header-title span{font-weight:600}
+
+/* Instructions */
+.instructions{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+.inst-toggle{width:100%;background:none;border:none;color:var(--text);font-family:var(--sans);font-size:13px;font-weight:500;padding:14px 16px;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.inst-toggle:hover{background:var(--surface2)}
+.inst-arrow{font-size:11px;color:var(--muted);transition:transform 0.2s}
+.inst-arrow.open{transform:rotate(180deg)}
+.inst-body{display:none;padding:0 16px 16px;border-top:1px solid var(--border)}
+.inst-body.open{display:block}
+.inst-section{margin-top:14px}
+.inst-section h4{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.inst-section p{font-size:13px;color:var(--muted);line-height:1.7}
+
+/* Card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.card-title{font-family:var(--mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.card-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Upload */
+.upload-zone{border:1px dashed var(--border2);border-radius:var(--radius);padding:32px 20px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;position:relative;background:var(--surface)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:var(--accent-dim)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:26px;margin-bottom:10px}
+.upload-title{font-size:15px;font-weight:400;margin-bottom:4px}
+.upload-sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* Preview */
+.preview-row{display:none;gap:14px;align-items:flex-start}
+.preview-row.show{display:flex}
+.preview-thumb{width:88px;min-width:88px;height:112px;object-fit:cover;border-radius:6px;border:1px solid var(--border)}
+.preview-meta{flex:1;min-width:0}
+.preview-name{font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.preview-hint{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+
+/* Buttons */
+.btn{background:var(--accent);color:#000;border:none;border-radius:6px;padding:12px 20px;font-family:var(--mono);font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.04em;transition:opacity 0.15s,transform 0.1s}
+.btn:hover{opacity:0.88}
+.btn:active{transform:scale(0.98)}
+.btn:disabled{opacity:0.35;cursor:not-allowed}
+.btn-block{width:100%;display:block;text-align:center}
+.btn-outline{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.btn-outline:hover{background:var(--accent-dim)}
+.btn-sm{padding:7px 14px;font-size:11px}
+
+/* Processing */
+.processing{display:none;text-align:center;padding:32px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px}
+.processing.show{display:block}
+.spinner{width:30px;height:30px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.proc-label{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.proc-step{font-size:13px;color:var(--text);margin-top:5px}
+
+/* Loading Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;width:100%;max-width:360px}
+.modal-title{font-size:16px;font-weight:500;margin-bottom:4px}
+.modal-sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.modal-field{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.denom-tag{font-family:var(--mono);font-size:10px;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent);border-radius:4px;padding:3px 8px;min-width:44px;text-align:center;flex-shrink:0}
+.modal-field label{font-family:var(--mono);font-size:11px;color:var(--muted);width:48px;flex-shrink:0}
+.modal-field input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-family:var(--mono);font-size:14px;outline:none;transition:border-color 0.2s}
+.modal-field input:focus{border-color:var(--accent)}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.modal-actions .btn{flex:1;text-align:center}
+
+/* Result */
+.result-wrap{display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
+.result-wrap.show{display:block}
+.result-header{background:var(--surface2);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.result-date{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent)}
+.result-ref{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+
+/* Table */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.reg-table{width:100%;border-collapse:collapse;min-width:380px}
+.reg-table th{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-align:right;padding:10px 12px 8px;border-bottom:1px solid var(--border);font-weight:400;white-space:nowrap}
+.reg-table th:first-child{text-align:left}
+.reg-table td{font-family:var(--mono);font-size:12px;text-align:right;padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+.reg-table td:first-child{text-align:left;font-weight:500;color:var(--accent2)}
+.reg-table tbody tr:last-child td{border-bottom:none}
+.reg-table .total-row td{font-weight:600;background:var(--surface2);border-top:1px solid var(--border2);border-bottom:none}
+.reg-table .total-row td:first-child{color:var(--muted);font-size:10px;letter-spacing:0.08em;text-transform:uppercase}
+.editable{cursor:text;border-bottom:1px dashed var(--border2);outline:none;min-width:30px;display:inline-block;padding:1px 2px}
+.editable:focus{background:var(--muted2);border-bottom:1px solid var(--accent);border-radius:2px}
+
+/* Physical Balance */
+.brought-back{padding:14px 16px;border-top:1px solid var(--border)}
+.warn-tip{font-family:var(--mono);font-size:9px;color:var(--warn);margin-bottom:10px;letter-spacing:0.06em}
+.bb-calc{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:2.2}
+.bb-calc .eq{color:var(--text)}
+.bb-divider{color:var(--border2)}
+.bb-final{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:2px solid var(--border2);flex-wrap:wrap;gap:10px}
+.bb-label{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)}
+.bb-note{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:3px}
+.bb-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.bb-value{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--accent);letter-spacing:-1px}
+
+/* Switch & GL */
+.balances-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;display:none}
+.balances-card.show{display:block}
+.bal-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)}
+.field input{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border-color 0.2s;width:100%}
+.field input:focus{border-color:var(--accent)}
+.traffic-grid{display:flex;flex-direction:column;gap:10px}
+.traffic-item{border-radius:8px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.traffic-item.green{background:#0a1f14;border:1px solid #1a5c32}
+.traffic-item.red{background:#1f0a0a;border:1px solid #5c1a1a}
+.traffic-item.amber{background:#1f160a;border:1px solid #5c3d1a}
+.traffic-label{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.1em}
+.traffic-item.green .traffic-label{color:#4caf6e}
+.traffic-item.red .traffic-label{color:#ff6b6b}
+.traffic-item.amber .traffic-label{color:#ffb347}
+.traffic-value{font-family:var(--mono);font-size:18px;font-weight:600}
+.traffic-item.green .traffic-value{color:#00c896}
+.traffic-item.red .traffic-value{color:#ff5555}
+.traffic-item.amber .traffic-value{color:#f0a500}
+.traffic-badge{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;font-weight:600}
+.traffic-item.green .traffic-badge{background:#1a5c32;color:#4caf6e}
+.traffic-item.red .traffic-badge{background:#5c1a1a;color:#ff6b6b}
+.traffic-item.amber .traffic-badge{background:#5c3d1a;color:#ffb347}
+
+/* Invalid Receipt */
+.invalid-box{display:none;background:#0f0a00;border:1px solid #5c3d00;border-radius:var(--radius);padding:18px 18px 16px;margin-bottom:16px}
+.invalid-box.show{display:block}
+.invalid-icon{font-size:28px;margin-bottom:10px}
+.invalid-title{font-size:15px;font-weight:600;color:var(--warn);margin-bottom:5px}
+.invalid-reason{font-family:var(--mono);font-size:11px;color:#c8a040;line-height:1.7;margin-bottom:14px}
+.invalid-hint{font-size:12px;color:var(--muted);line-height:1.6;border-top:1px solid #3d2800;padding-top:12px}
+.invalid-hint strong{color:var(--text)}
+
+/* Error */
+.error-box{display:none;background:#180b0b;border:1px solid #3d1515;border-radius:var(--radius);padding:14px 16px;font-family:var(--mono);font-size:11px;color:var(--danger);line-height:1.7;white-space:pre-wrap;margin-bottom:16px}
+.error-box.show{display:block}
+.reset-bar{display:none;margin-bottom:16px}
+.reset-bar.show{display:block}
+
+/* Save bar */
+.save-bar{padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.save-status{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.save-status.saved{color:var(--accent)}
+.save-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Auth */
+.auth-bar{display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
+.user-avatar{width:28px;height:28px;border-radius:50%;border:1px solid var(--border2);object-fit:cover}
+.user-email{font-family:var(--mono);font-size:10px;color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-login{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:6px 12px;font-family:var(--mono);font-size:10px;font-weight:600;cursor:pointer;letter-spacing:0.04em;transition:opacity 0.15s}
+.btn-login:hover{opacity:0.8}
+.btn-signout{background:transparent;color:var(--muted);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-family:var(--mono);font-size:10px;cursor:pointer;transition:opacity 0.15s}
+.btn-signout:hover{opacity:0.7}
+
+/* History Modal */
+.history-modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0;width:100%;max-width:500px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden}
+.history-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.history-title{font-size:15px;font-weight:500}
+.history-close{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1;padding:2px 6px}
+.history-close:hover{color:var(--text)}
+.history-body{overflow-y:auto;flex:1;padding:12px}
+.history-empty{text-align:center;padding:40px 20px;font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.8}
+.history-hint{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;padding:8px 0 4px;letter-spacing:0.04em}
+.history-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s}
+.history-item:hover{border-color:var(--accent)}
+.history-item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px}
+.history-item-date{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent)}
+.history-item-type{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:4px;font-weight:600}
+.history-item-type.bna{background:#0a1f14;color:#4caf6e;border:1px solid #1a5c32}
+.history-item-type.atm{background:#0a101f;color:#4db8ff;border:1px solid #1a305c}
+.history-item-ref{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.history-item-bal{font-family:var(--mono);font-size:12px;color:var(--text);margin-top:6px}
+.history-item-diffs{display:flex;gap:10px;margin-top:5px}
+.hist-diff{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:4px}
+.hist-diff.green{background:#0a1f14;color:#4caf6e;border:1px solid #1a5c32}
+.hist-diff.red{background:#1f0a0a;color:#ff6b6b;border:1px solid #5c1a1a}
+.hist-diff.amber{background:#1f160a;color:#ffb347;border:1px solid #5c3d1a}
+.history-item-saved{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:4px}
+.history-item-del{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:2px 6px;border-radius:4px}
+.history-item-del:hover{color:var(--danger);background:#180b0b}
+.history-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:10px}
+.history-footer .btn{flex:1;text-align:center}
+
+/* History Record View Modal */
+.hrm-modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0;width:100%;max-width:540px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+.hrm-header{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.hrm-date{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent)}
+.hrm-ref{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+.hrm-body{overflow-y:auto;flex:1;padding:16px}
+.hrm-phy-wrap{margin-bottom:14px}
+.hrm-phy-label{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:3px}
+.hrm-phy{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--accent);letter-spacing:-1px}
+.hrm-table-wrap{overflow-x:auto}
+.hrm-close{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1;padding:2px 6px}
+.hrm-close:hover{color:var(--text)}
+
+/* Auth Gate */
+.auth-gate{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 24px;width:100%;max-width:340px;text-align:center}
+.auth-gate-title{font-size:16px;font-weight:500;margin-bottom:6px}
+.auth-gate-sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:22px;line-height:1.6}
+.auth-gate-google{display:flex;justify-content:center}
+.auth-gate-cancel{display:block;margin:14px auto 0;background:none;border:none;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer}
+.auth-gate-cancel:hover{color:var(--text)}
+
+/* Email Modal */
+.email-modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;width:100%;max-width:400px}
+.email-modal .modal-field input{width:100%}
+.email-status{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:10px;min-height:18px}
+
+/* ── PRINT ── */
+@media print{
+  @page{size:A4 landscape;margin:8mm}
+  body{background:#fff;color:#000;padding:0;font-size:10px}
+  #mainWrap{display:none!important}
+  .modal-overlay{display:none!important}
+  #printOnly{display:block!important}
+  .print-header{text-align:center;border-bottom:2px solid #000;padding-bottom:3mm;margin-bottom:4mm}
+  .print-header h1{font-size:14px;font-weight:700;font-family:sans-serif;letter-spacing:0.05em}
+  .print-header p{font-size:9px;color:#555;margin-top:2px;font-family:monospace}
+  .print-layout{display:flex;gap:5mm;align-items:flex-start}
+  .print-img-col{width:50mm;flex-shrink:0}
+  .print-img-col img{width:100%;border:1px solid #ccc;border-radius:3px}
+  .print-data-col{flex:1;min-width:0}
+  .print-result{border:1px solid #bbb;border-radius:4px;overflow:hidden;margin-bottom:3mm}
+  .print-result-header{background:#f0f0f0;padding:5px 8px;border-bottom:1px solid #bbb}
+  .print-date{font-family:monospace;font-size:11px;font-weight:700;color:#000}
+  .print-ref{font-family:monospace;font-size:9px;color:#555;margin-top:1px}
+  table{width:100%;border-collapse:collapse}
+  table th{font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#666;text-align:right;padding:5px 7px 4px;border-bottom:1px solid #ccc;font-weight:400}
+  table th:first-child{text-align:left}
+  table td{font-family:monospace;font-size:9px;text-align:right;padding:5px 7px;border-bottom:1px solid #eee;color:#000}
+  table td:first-child{text-align:left;font-weight:600;color:#000}
+  table .total-row td{font-weight:700;background:#f0f0f0;border-top:1px solid #ccc}
+  .print-balance{padding:6px 8px;font-family:monospace}
+  .print-balance-label{font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:#666}
+  .print-balance-value{font-size:16px;font-weight:700;color:#000;margin-top:2px}
+  .print-balance-note{font-size:8px;color:#888}
+  .print-traffic{display:flex;gap:3mm;margin-top:3mm}
+  .print-traffic-item{flex:1;border:1px solid #ccc;border-radius:4px;padding:5px 8px}
+  .print-traffic-label{font-family:monospace;font-size:8px;text-transform:uppercase;color:#666}
+  .print-traffic-value{font-family:monospace;font-size:13px;font-weight:700;color:#000;margin-top:2px}
+  .print-traffic-badge{font-family:monospace;font-size:8px;display:inline-block;padding:1px 5px;border-radius:3px;margin-top:2px;color:#fff}
+  .badge-green{background:#1a7a3a}
+  .badge-red{background:#a00}
+  .badge-amber{background:#a05000}
+}
+
+/* Mobile */
+@media(max-width:500px){
+  .header-title{font-size:19px}
+  .preview-row{flex-direction:column}
+  .preview-thumb{width:100%;height:150px;min-width:unset}
+  .bb-value{font-size:19px}
+  .modal{padding:18px}
+  .bal-inputs{grid-template-columns:1fr}
+  .auth-bar{gap:6px}
+  .save-bar{flex-direction:column;align-items:flex-start}
+  .save-actions{width:100%}
+  .save-actions .btn{flex:1}
+}
+</style>
+</head>
+<body>
+
+<!-- PRINT ONLY -->
+<div class="print-only" style="display:none" id="printOnly">
+  <div class="print-header">
+    <h1>ATM/BNA AUTO RECONCILIATION APP</h1>
+    <p id="printMeta"></p>
+  </div>
+  <div class="print-layout">
+    <div class="print-img-col"><img id="printImg" src="" alt="Host Total Receipt"></div>
+    <div class="print-data-col" id="printData"></div>
+  </div>
+</div>
+
+<div class="wrap" id="mainWrap">
+
+  <!-- Header -->
+  <div class="header" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+    <div class="header-title">ATM/BNA <span>Auto Reconciliation</span></div>
+    <div class="auth-bar">
+      <button class="btn-login" id="exportBtn" onclick="exportToExcel()" style="display:none">📊 Export</button>
+      <button class="btn-login" id="historyBtn" onclick="openHistory()" style="display:none">📋 History</button>
+      <div id="authLoggedOut">
+        <div id="g_id_onload"
+          data-client_id="588505202142-qakst823p9ghvdhuthqa49dq3l8mlkm9.apps.googleusercontent.com"
+          data-callback="handleGoogleLogin"
+          data-auto_prompt="false"></div>
+        <button class="btn-login" onclick="triggerGoogleLogin('header')">🔑 Sign in</button>
+      </div>
+      <div id="authLoggedIn" style="display:none;align-items:center;gap:8px">
+        <img class="user-avatar" id="userAvatar" src="" alt="">
+        <span class="user-email" id="userEmail"></span>
+        <button class="btn-signout" onclick="logout()">Sign out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instructions -->
+  <div class="instructions">
+    <button class="inst-toggle" onclick="toggleInst()">
+      <span>📋 &nbsp;How to use this app</span>
+      <span class="inst-arrow" id="instArrow">▼</span>
+    </button>
+    <div class="inst-body" id="instBody">
+      <div class="inst-section">
+        <h4>Step 1 — Upload</h4>
+        <p>Take a clear photo of the Host Total Receipt from the ATM or BNA machine and upload it. The app automatically detects the machine type.</p>
+      </div>
+      <div class="inst-section">
+        <h4>Step 2 — Loading Details</h4>
+        <p>Enter the number of notes loaded into each cassette (₹100, ₹500, ₹200). All three values are mandatory — enter 0 if a cassette was not loaded.</p>
+      </div>
+      <div class="inst-section">
+        <h4>Step 3 — Brought Back</h4>
+        <p>Enter the number of notes physically brought back for each denomination (₹100, ₹500, ₹200). Excess and Short are calculated automatically. Physical Balance updates in real time.</p>
+      </div>
+      <div class="inst-section">
+        <h4>Step 4 — Switch &amp; GL Balances</h4>
+        <p>Enter the Switch Balance and GL Balance, then click <strong style="color:var(--accent)">Calculate Differences</strong>. Results show as Tallied, Excess, or Short.</p>
+      </div>
+      <div class="inst-section">
+        <h4>Step 5 — Save, Email &amp; History</h4>
+        <p>After calculating differences, <strong style="color:var(--accent)">Sign in with Google</strong> to save the record. Use <strong style="color:var(--accent)">✉ Email</strong> to send the report. Tap <strong style="color:var(--accent)">📋 History</strong> to view all saved records and <strong style="color:var(--accent)">📊 Export</strong> to download as Excel.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload -->
+  <div class="card">
+    <div class="card-title">Upload Host Total Receipt</div>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])">
+      <div class="upload-icon">🧾</div>
+      <div class="upload-title">Tap to upload Host Total Receipt</div>
+      <div class="upload-sub">JPG · PNG · WEBP — camera or gallery</div>
+    </div>
+    <div class="preview-row" id="previewRow">
+      <img class="preview-thumb" id="previewImg" src="" alt="">
+      <div class="preview-meta">
+        <div class="preview-name" id="previewName"></div>
+        <!-- Orientation warning -->
+        <div id="orientWarn" style="display:none;align-items:flex-start;gap:8px;background:#1f160a;border:1px solid #5c3d1a;border-radius:6px;padding:10px 12px;margin-bottom:12px">
+          <span style="font-size:16px;flex-shrink:0">⚠️</span>
+          <div>
+            <div style="font-family:var(--mono);font-size:11px;color:#ffb347;font-weight:600;margin-bottom:3px">Wrong orientation detected</div>
+            <div style="font-family:var(--mono);font-size:10px;color:#c8a040;line-height:1.6">Receipt appears to be landscape. Please retake in portrait (vertical) mode for best OCR results.</div>
+            <button class="btn btn-outline btn-sm" onclick="retakePhoto()" style="margin-top:8px;color:#ffb347;border-color:#ffb347">📷 Retake Photo</button>
+          </div>
+        </div>
+        <div class="preview-hint">Tap Scan to read the receipt.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-block" id="scanBtn" onclick="scanReceipt()">⟳ &nbsp;Scan &amp; Reconcile</button>
+          <button class="btn btn-outline btn-sm" onclick="retakePhoto()" title="Upload a different photo" style="white-space:nowrap">📷 Retake</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Processing -->
+  <div class="processing" id="processing">
+    <div class="spinner"></div>
+    <div class="proc-label">Reading receipt...</div>
+    <div class="proc-step" id="procStep">Detecting machine type</div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- Invalid Receipt -->
+  <div class="invalid-box" id="invalidBox">
+    <div class="invalid-icon">🧾</div>
+    <div class="invalid-title">Invalid Receipt</div>
+    <div class="invalid-reason" id="invalidReason"></div>
+    <div class="invalid-hint">
+      <strong>Please upload the actual Host Total receipt.</strong><br>
+      This is the printed report from the ATM/BNA machine showing cassette TYPE blocks with LOADED, DISPENSED, and REMAINING values — not a transaction slip or any other document.
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-wrap" id="resultWrap">
+    <div class="result-header">
+      <div>
+        <div class="result-date" id="resultDate">—</div>
+        <div class="result-ref" id="resultRef"></div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="doPrint()">🖨 Print</button>
+    </div>
+    <div class="table-wrap">
+      <table class="reg-table">
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
+        <tfoot id="tableFoot"></tfoot>
+      </table>
+    </div>
+    <div class="brought-back">
+      <div class="warn-tip">✎ Enter Brought Back count per denomination · Excess &amp; Short auto-calculated · Physical Balance = Sum of Brought Back</div>
+      <div class="bb-calc" id="bbCalc"></div>
+      <div class="bb-final">
+        <div>
+          <div class="bb-label">Physical Balance</div>
+          <div class="bb-note" id="bbNote"></div>
+        </div>
+        <div class="bb-right">
+          <button class="btn btn-outline btn-sm" onclick="recalculate()">↻ Recalculate</button>
+          <div class="bb-value" id="bbValue"></div>
+        </div>
+      </div>
+    </div>
+    <div class="save-bar">
+      <span class="save-status" id="saveStatus">Calculate differences, then sign in to save</span>
+      <div class="save-actions">
+        <span id="cloudStatus" style="font-family:var(--mono);font-size:10px;color:var(--muted);display:none;align-items:center;gap:4px"></span>
+        <button class="btn btn-outline btn-sm" id="emailBtn" onclick="openEmailModal()" disabled>✉ Email</button>
+        <button class="btn btn-outline btn-sm" id="saveBtn" onclick="saveRecord()" disabled>💾 Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Switch & GL Balances -->
+  <div class="balances-card" id="balancesCard">
+    <div class="card-title">Switch &amp; GL Balances</div>
+    <div class="bal-inputs">
+      <div class="field"><label>Switch Balance (₹)</label><input type="number" id="switchBal" placeholder="e.g. 997900" min="0"></div>
+      <div class="field"><label>GL Balance (₹)</label><input type="number" id="glBal" placeholder="e.g. 997900" min="0"></div>
+    </div>
+    <div style="margin-bottom:14px">
+      <button class="btn btn-block" onclick="calcBalances()">Calculate Differences</button>
+    </div>
+    <div class="traffic-grid" id="trafficGrid" style="display:none"></div>
+  </div>
+
+  <!-- Reset -->
+  <div class="reset-bar" id="resetBar">
+    <button class="btn btn-outline btn-block" onclick="resetAll()">↩ &nbsp;Scan Another Receipt</button>
+  </div>
+
+  <!-- Disclaimer -->
+ <div style="text-align:center;padding:20px 16px 8px;font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.7;border-top:1px solid var(--border);margin-top:8px">
+  This application is not affiliated with any bank or financial institution.<br>
+  All data is handled within the application and stored in the user’s local or cloud environment.
+</div>
+
+</div><!-- end .wrap -->
+
+<!-- Loading Modal -->
+<div class="modal-overlay" id="loadingModal">
+  <div class="modal">
+    <div class="modal-title">Loading Details</div>
+    <div class="modal-field"><span class="denom-tag">₹100</span><label>Notes</label><input type="number" id="load100" placeholder="Enter count" min="0" value=""></div>
+    <div class="modal-field"><span class="denom-tag">₹500</span><label>Notes</label><input type="number" id="load500" placeholder="Enter count" min="0" value=""></div>
+    <div class="modal-field"><span class="denom-tag">₹200</span><label>Notes</label><input type="number" id="load200" placeholder="Enter count" min="0" value=""></div>
+    <div id="loadingError" style="font-family:var(--mono);font-size:11px;color:var(--danger);margin-top:8px;display:none">⚠ Please enter loading amount for all cassettes to proceed.</div>
+    <div class="modal-actions">
+      <button class="btn" onclick="confirmLoading()" style="width:100%">Confirm &amp; Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal-overlay" id="historyModal">
+  <div class="history-modal">
+    <div class="history-header">
+      <div class="history-title">📋 Report History</div>
+      <button class="history-close" onclick="closeHistory()">✕</button>
+    </div>
+    <div class="history-body" id="historyBody"></div>
+    <div class="history-footer">
+      <button class="btn btn-outline btn-sm" onclick="exportToExcel();closeHistory()">📊 Export Excel</button>
+      <button class="btn btn-outline btn-sm" onclick="closeHistory()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- History Record View Modal (read-only) -->
+<div class="modal-overlay" id="historyRecordModal">
+  <div class="hrm-modal">
+    <div class="hrm-header">
+      <div>
+        <div class="hrm-date"></div>
+        <div class="hrm-ref"></div>
+      </div>
+      <button class="hrm-close" onclick="closeHistoryRecordModal()">✕</button>
+    </div>
+    <div class="hrm-body">
+      <div class="hrm-phy-wrap">
+        <div class="hrm-phy-label">Physical Balance</div>
+        <div class="hrm-phy"></div>
+      </div>
+      <div class="hrm-table-wrap hrm-table"></div>
+      <div class="hrm-traffic"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Email Modal -->
+<div class="modal-overlay" id="emailModal">
+  <div class="email-modal modal">
+    <div class="modal-title">✉ Email Report</div>
+    <div class="modal-sub">Send this reconciliation report by email.</div>
+    <div class="modal-field" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)">Recipient Email</label>
+      <input type="email" id="emailTo" placeholder="recipient@example.com" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none">
+    </div>
+    <div class="modal-field" style="flex-direction:column;align-items:flex-start;gap:6px;margin-top:8px">
+      <label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)">Subject</label>
+      <input type="text" id="emailSubject" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none">
+    </div>
+    <div class="email-status" id="emailStatus"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeEmailModal()">Cancel</button>
+      <button class="btn" id="emailSendBtn" onclick="sendEmail()">Send Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- Auth Gate Modal -->
+<div class="modal-overlay" id="authGateModal">
+  <div class="auth-gate">
+    <div class="auth-gate-title" id="authGateTitle">Sign in required</div>
+    <div class="auth-gate-sub" id="authGateSub">Please sign in with Google to continue.</div>
+    <div class="auth-gate-google">
+      <div class="g_id_signin"
+        data-type="standard"
+        data-shape="rectangular"
+        data-theme="filled_black"
+        data-text="sign_in_with"
+        data-size="large"
+        data-logo_alignment="left"></div>
+    </div>
+    <button class="auth-gate-cancel" onclick="closeAuthGate()">Cancel</button>
+  </div>
+</div>
+
+<!-- Firebase SDK (v9 compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<!-- JS — load order matters -->
+<script src="js/ui.js"></script>
+<script src="js/firebase.js"></script>
+<script src="js/history.js"></script>
+<script src="js/scan.js"></script>
+<script src="js/email.js"></script>
+<script src="js/main.js"></script>
+
+<!-- PWA Install Banner -->
+<div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--surface);border-top:1px solid var(--border);padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+  <div>
+    <div style="font-size:13px;font-weight:500;margin-bottom:2px">Install App</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--muted)">Add BNA Recon to your home screen for quick access</div>
+  </div>
+  <div style="display:flex;gap:8px;flex-shrink:0">
+    <button onclick="dismissInstall()" style="background:none;border:1px solid var(--border2);color:var(--muted);border-radius:6px;padding:6px 12px;font-family:var(--mono);font-size:11px;cursor:pointer">Later</button>
+    <button onclick="doInstall()" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:6px 14px;font-family:var(--mono);font-size:11px;font-weight:600;cursor:pointer">Install</button>
+  </div>
+</div>
+
+<!-- Service Worker + PWA Install Prompt -->
+<script>
+// ── Service Worker Registration ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('[SW] Registered:', reg.scope))
+      .catch(err => console.warn('[SW] Registration failed:', err));
+  });
+}
+
+// ── Install Prompt ──
+let _deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredPrompt = e;
+  // Show banner only if not dismissed before
+  if (!localStorage.getItem('pwa_install_dismissed')) {
+    const banner = document.getElementById('installBanner');
+    if (banner) banner.style.display = 'flex';
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  _deferredPrompt = null;
+  const banner = document.getElementById('installBanner');
+  if (banner) banner.style.display = 'none';
+  console.log('[PWA] Installed successfully');
+});
+
+function doInstall() {
+  if (!_deferredPrompt) return;
+  _deferredPrompt.prompt();
+  _deferredPrompt.userChoice.then(choice => {
+    _deferredPrompt = null;
+    document.getElementById('installBanner').style.display = 'none';
+  });
+}
+
+function dismissInstall() {
+  localStorage.setItem('pwa_install_dismissed', '1');
+  document.getElementById('installBanner').style.display = 'none';
+}
+</script>
+</body>
+</html>
