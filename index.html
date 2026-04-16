@@ -132,11 +132,33 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .reg-table th:first-child{text-align:left}
 .reg-table td{font-family:var(--mono);font-size:12px;text-align:right;padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text)}
 .reg-table td:first-child{text-align:left;font-weight:500;color:var(--accent2)}
+.reg-table td.bb-col{background:#060f1a;border-left:1px solid #1a3a5c;border-right:1px solid #1a3a5c}
 .reg-table tbody tr:last-child td{border-bottom:none}
 .reg-table .total-row td{font-weight:600;background:var(--surface2);border-top:1px solid var(--border2);border-bottom:none}
 .reg-table .total-row td:first-child{color:var(--muted);font-size:10px;letter-spacing:0.08em;text-transform:uppercase}
 .editable{cursor:text;border-bottom:1px dashed var(--border2);outline:none;min-width:30px;display:inline-block;padding:1px 2px}
 .editable:focus{background:var(--muted2);border-bottom:1px solid var(--accent);border-radius:2px}
+/* Brought Back editable cell — highlighted */
+.bb-editable{
+  background:#0a1a2e;
+  border:1px solid #4db8ff !important;
+  border-radius:5px;
+  color:#4db8ff;
+  font-weight:600;
+  padding:3px 8px !important;
+  min-width:48px;
+  text-align:center;
+  cursor:text;
+  display:inline-block;
+  outline:none;
+  transition:background 0.15s,border-color 0.15s,box-shadow 0.15s;
+}
+.bb-editable:focus{
+  background:#0d2040;
+  border-color:#7dd3fc !important;
+  box-shadow:0 0 0 2px #4db8ff33;
+  color:#7dd3fc;
+}
 
 /* Physical Balance */
 .brought-back{padding:14px 16px;border-top:1px solid var(--border)}

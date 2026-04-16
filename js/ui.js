@@ -57,7 +57,7 @@ function roCell(val) {
 
 // ── EDITABLE Brought Back cell ──
 function bbCell(val, denom) {
-  return '<span class="editable" contenteditable="true" data-field="bb" data-denom="' + denom + '" oninput="onBBInput(this)">' + val + '</span>';
+  return '<span class="editable bb-editable" contenteditable="true" data-field="bb" data-denom="' + denom + '" oninput="onBBInput(this)" placeholder="0">' + val + '</span>';
 }
 
 // ── Called on every Brought Back keystroke ──
@@ -131,7 +131,7 @@ function renderResult(data, loading) {
       '<td>' + roCell(r.dep)      + '</td>' +
       '<td>' + roCell(r.dis)      + '</td>' +
       '<td>' + roCell(r.rem)      + '</td>' +
-      '<td>' + bbCell(0, r.denom) + '</td>' +
+      '<td class="bb-col">' + bbCell(0, r.denom) + '</td>' +
       '<td><span class="cell-excess ro-val" style="color:var(--accent)">0</span></td>' +
       '<td><span class="cell-short ro-val" style="color:var(--warn)">' + fmt(r.rem) + '</span></td>' +
       '<td>' + roCell(r.loading)  + '</td>' +
@@ -180,7 +180,7 @@ function renderResult(data, loading) {
       '<td>' + roCell(r.opening) + '</td>' +
       '<td>' + roCell(r.dis)     + '</td>' +
       '<td>' + roCell(r.rem)     + '</td>' +
-      '<td>' + bbCell(0, r.denom) + '</td>' +
+      '<td class="bb-col">' + bbCell(0, r.denom) + '</td>' +
       '<td><span class="cell-excess ro-val" style="color:var(--accent)">0</span></td>' +
       '<td><span class="cell-short ro-val" style="color:var(--warn)">' + fmt(r.rem) + '</span></td>' +
       '<td>' + roCell(r.loading) + '</td>' +
