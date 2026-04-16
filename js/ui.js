@@ -270,10 +270,7 @@ function recalcPhysicalBalance() {
 
   currentBroughtBack = tBB;
 
-  document.getElementById('bbCalc').innerHTML =
-    '<span class="eq">Physical Balance</span>  =  Sum of (Brought Back \u00d7 Denomination)' +
-    '<br><span class="bb-divider">\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500</span>' +
-    '<br><span class="eq">= \u20b9' + fmt(tBB) + '</span>';
+  document.getElementById('bbCalc').innerHTML = '';
 
   document.getElementById('bbValue').textContent = '\u20b9' + fmt(tBB);
 
