@@ -524,11 +524,22 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 <!-- Loading Modal -->
 <div class="modal-overlay" id="loadingModal">
   <div class="modal">
-    <div class="modal-title">Loading Details</div>
-    <div class="modal-field"><span class="denom-tag">₹100</span><label>Notes</label><input type="number" id="load100" placeholder="Enter count" min="0" value=""></div>
-    <div class="modal-field"><span class="denom-tag">₹500</span><label>Notes</label><input type="number" id="load500" placeholder="Enter count" min="0" value=""></div>
-    <div class="modal-field"><span class="denom-tag">₹200</span><label>Notes</label><input type="number" id="load200" placeholder="Enter count" min="0" value=""></div>
-    <div id="loadingError" style="font-family:var(--mono);font-size:11px;color:var(--danger);margin-top:8px;display:none">⚠ Please enter loading amount for all cassettes to proceed.</div>
+    <div class="modal-title">Loading &amp; Brought Back Details</div>
+    <div class="modal-sub" style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:14px;line-height:1.6">Enter notes loaded into each cassette and notes physically brought back.</div>
+
+    <!-- Loading -->
+    <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Loading (Notes put in)</div>
+    <div class="modal-field"><span class="denom-tag">₹100</span><label>Loaded</label><input type="number" id="load100" placeholder="Enter count" min="0" value=""></div>
+    <div class="modal-field"><span class="denom-tag">₹500</span><label>Loaded</label><input type="number" id="load500" placeholder="Enter count" min="0" value=""></div>
+    <div class="modal-field"><span class="denom-tag">₹200</span><label>Loaded</label><input type="number" id="load200" placeholder="Enter count" min="0" value=""></div>
+
+    <!-- Brought Back -->
+    <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#4db8ff;margin-top:16px;margin-bottom:8px">Brought Back (Notes counted back)</div>
+    <div class="modal-field"><span class="denom-tag" style="color:#4db8ff;border-color:#4db8ff;background:#0a1a2e">₹100</span><label>BB</label><input type="number" id="bb100" placeholder="Enter count" min="0" value="" style="border-color:#1a3a5c"></div>
+    <div class="modal-field"><span class="denom-tag" style="color:#4db8ff;border-color:#4db8ff;background:#0a1a2e">₹500</span><label>BB</label><input type="number" id="bb500" placeholder="Enter count" min="0" value="" style="border-color:#1a3a5c"></div>
+    <div class="modal-field"><span class="denom-tag" style="color:#4db8ff;border-color:#4db8ff;background:#0a1a2e">₹200</span><label>BB</label><input type="number" id="bb200" placeholder="Enter count" min="0" value="" style="border-color:#1a3a5c"></div>
+
+    <div id="loadingError" style="font-family:var(--mono);font-size:11px;color:var(--danger);margin-top:8px;display:none">⚠ Please enter all Loading and Brought Back amounts to proceed.</div>
     <div class="modal-actions">
       <button class="btn" onclick="confirmLoading()" style="width:100%">Confirm &amp; Continue</button>
     </div>

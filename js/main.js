@@ -4,6 +4,7 @@
 var imageBase64 = '', imageMime = 'image/jpeg';
 var pendingData = null, currentMachineType = 'BNA', currentBroughtBack = 0;
 var pendingLoading = { l100:0, l500:0, l200:0 };
+var pendingBroughtBack = { bb100:0, bb500:0, bb200:0 };
 var currentUser = null, authGatePurpose = null;
 var balancesCalculated = false;
 var lastSwitchBal = 0, lastGLBal = 0;
@@ -13,6 +14,7 @@ function handleGoogleLogin(response) {
   const payload = JSON.parse(atob(response.credential.split('.')[1]));
   currentUser = { name: payload.name, email: payload.email, picture: payload.picture };
   sessionStorage.setItem('guser', JSON.stringify(currentUser));
+  localStorage.setItem('guser', JSON.stringify(currentUser));
   updateAuthUI();
   closeAuthGate();
   if (authGatePurpose === 'save')    { authGatePurpose = null; saveRecord(); }
@@ -39,6 +41,7 @@ function closeAuthGate() { document.getElementById('authGateModal').classList.re
 function logout() {
   currentUser = null;
   sessionStorage.removeItem('guser');
+  localStorage.removeItem('guser');
   updateAuthUI();
 }
 
@@ -56,7 +59,7 @@ function updateAuthUI() {
 }
 
 function checkSession() {
-  const stored = sessionStorage.getItem('guser');
+  const stored = localStorage.getItem('guser') || sessionStorage.getItem('guser');
   if (stored) { currentUser = JSON.parse(stored); updateAuthUI(); }
 }
 

@@ -95,7 +95,8 @@ function recalcRow(row) {
 // ── renderResult ──
 // Columns: Denom | Opening | [Deposited BNA] | Dispensed | Remaining | Brought Back✎ | Excess | Short | Loading
 // Physical Balance = sum(Brought Back × denom)
-function renderResult(data, loading) {
+function renderResult(data, loading, bb) {
+  bb = bb || { bb100:0, bb500:0, bb200:0 };
   const mt = (data.machine_type || 'BNA').toUpperCase();
   currentMachineType = mt;
   const isBNA = mt === 'BNA';
@@ -110,9 +111,9 @@ function renderResult(data, loading) {
   if (isBNA) {
     const t2 = data.type2||{}, t3 = data.type3||{}, t4 = data.type4||{};
     const rows = [
-      { label:'₹100', denom:100, opening:t2.loaded||0, dep:t2.deposited||0, dis:t2.dispensed||0, rem:t2.remaining||0, loading:loading.l100 },
-      { label:'₹500', denom:500, opening:t3.loaded||0, dep:t3.deposited||0, dis:t3.dispensed||0, rem:t3.remaining||0, loading:loading.l500 },
-      { label:'₹200', denom:200, opening:t4.loaded||0, dep:t4.deposited||0, dis:t4.dispensed||0, rem:t4.remaining||0, loading:loading.l200 }
+      { label:'₹100', denom:100, opening:t2.loaded||0, dep:t2.deposited||0, dis:t2.dispensed||0, rem:t2.remaining||0, loading:loading.l100, bb:bb.bb100 },
+      { label:'₹500', denom:500, opening:t3.loaded||0, dep:t3.deposited||0, dis:t3.dispensed||0, rem:t3.remaining||0, loading:loading.l500, bb:bb.bb500 },
+      { label:'₹200', denom:200, opening:t4.loaded||0, dep:t4.deposited||0, dis:t4.dispensed||0, rem:t4.remaining||0, loading:loading.l200, bb:bb.bb200 }
     ];
 
     document.getElementById('tableHead').innerHTML =
@@ -124,45 +125,51 @@ function renderResult(data, loading) {
       '<th>Loading</th>' +
       '</tr>';
 
-    document.getElementById('tableBody').innerHTML = rows.map(r =>
-      '<tr data-denom="' + r.denom + '" data-machine="BNA">' +
+    document.getElementById('tableBody').innerHTML = rows.map(r => {
+      const diff = r.bb - r.rem;
+      const ex   = diff > 0 ? diff : 0;
+      const sh   = diff < 0 ? -diff : 0;
+      return '<tr data-denom="' + r.denom + '" data-machine="BNA">' +
       '<td>' + r.label + '</td>' +
       '<td>' + roCell(r.opening)  + '</td>' +
       '<td>' + roCell(r.dep)      + '</td>' +
       '<td>' + roCell(r.dis)      + '</td>' +
       '<td>' + roCell(r.rem)      + '</td>' +
-      '<td class="bb-col">' + bbCell(0, r.denom) + '</td>' +
-      '<td><span class="cell-excess ro-val" style="color:var(--accent)">0</span></td>' +
-      '<td><span class="cell-short ro-val" style="color:var(--warn)">' + fmt(r.rem) + '</span></td>' +
+      '<td class="bb-col">' + bbCell(r.bb, r.denom) + '</td>' +
+      '<td><span class="cell-excess ro-val" style="color:var(--accent)">' + fmt(ex) + '</span></td>' +
+      '<td><span class="cell-short ro-val" style="color:var(--warn)">'   + fmt(sh) + '</span></td>' +
       '<td>' + roCell(r.loading)  + '</td>' +
-      '</tr>'
-    ).join('');
+      '</tr>';
+    }).join('');
 
-    const tO  = rows.reduce((s,r)=>s+r.opening*r.denom,0);
-    const tD  = rows.reduce((s,r)=>s+r.dep*r.denom,0);
-    const tDi = rows.reduce((s,r)=>s+r.dis*r.denom,0);
-    const tR  = rows.reduce((s,r)=>s+r.rem*r.denom,0);
-    const tL  = rows.reduce((s,r)=>s+r.loading*r.denom,0);
+    const tO   = rows.reduce((s,r)=>s+r.opening*r.denom,0);
+    const tD   = rows.reduce((s,r)=>s+r.dep*r.denom,0);
+    const tDi  = rows.reduce((s,r)=>s+r.dis*r.denom,0);
+    const tR   = rows.reduce((s,r)=>s+r.rem*r.denom,0);
+    const tL   = rows.reduce((s,r)=>s+r.loading*r.denom,0);
+    const tBBv = rows.reduce((s,r)=>s+r.bb*r.denom,0);
+    const tExv = rows.reduce((s,r)=>s+Math.max(r.bb-r.rem,0)*r.denom,0);
+    const tShv = rows.reduce((s,r)=>s+Math.max(r.rem-r.bb,0)*r.denom,0);
 
     document.getElementById('tableFoot').innerHTML =
       '<tr class="total-row">' +
       '<td>Totals</td>' +
-      '<td id="tOpening">' + fmt(tO)  + '</td>' +
-      '<td id="tDep">'     + fmt(tD)  + '</td>' +
-      '<td id="tDis">'     + fmt(tDi) + '</td>' +
-      '<td id="tRem">'     + fmt(tR)  + '</td>' +
-      '<td id="tBB">0</td>' +
-      '<td id="tEx">0</td>' +
-      '<td id="tShort">'   + fmt(tR)  + '</td>' +
-      '<td id="tLoading">' + fmt(tL)  + '</td>' +
+      '<td id="tOpening">' + fmt(tO)   + '</td>' +
+      '<td id="tDep">'     + fmt(tD)   + '</td>' +
+      '<td id="tDis">'     + fmt(tDi)  + '</td>' +
+      '<td id="tRem">'     + fmt(tR)   + '</td>' +
+      '<td id="tBB">'      + fmt(tBBv) + '</td>' +
+      '<td id="tEx">'      + fmt(tExv) + '</td>' +
+      '<td id="tShort">'   + fmt(tShv) + '</td>' +
+      '<td id="tLoading">' + fmt(tL)   + '</td>' +
       '</tr>';
 
   } else {
     const t1=data.type1||{}, t2=data.type2||{}, t3=data.type3||{}, t4=data.type4||{};
     const rows = [
-      { label:'₹100', denom:100, opening:t1.loaded||0, dis:t1.dispensed||0, rem:t1.remaining||0, loading:loading.l100 },
-      { label:'₹500', denom:500, opening:(t2.loaded||0)+(t4.loaded||0), dis:(t2.dispensed||0)+(t4.dispensed||0), rem:(t2.remaining||0)+(t4.remaining||0), loading:loading.l500 },
-      { label:'₹200', denom:200, opening:t3.loaded||0, dis:t3.dispensed||0, rem:t3.remaining||0, loading:loading.l200 }
+      { label:'₹100', denom:100, opening:t1.loaded||0, dis:t1.dispensed||0, rem:t1.remaining||0, loading:loading.l100, bb:bb.bb100 },
+      { label:'₹500', denom:500, opening:(t2.loaded||0)+(t4.loaded||0), dis:(t2.dispensed||0)+(t4.dispensed||0), rem:(t2.remaining||0)+(t4.remaining||0), loading:loading.l500, bb:bb.bb500 },
+      { label:'₹200', denom:200, opening:t3.loaded||0, dis:t3.dispensed||0, rem:t3.remaining||0, loading:loading.l200, bb:bb.bb200 }
     ];
 
     document.getElementById('tableHead').innerHTML =
@@ -174,34 +181,40 @@ function renderResult(data, loading) {
       '<th>Loading</th>' +
       '</tr>';
 
-    document.getElementById('tableBody').innerHTML = rows.map(r =>
-      '<tr data-denom="' + r.denom + '" data-machine="ATM">' +
+    document.getElementById('tableBody').innerHTML = rows.map(r => {
+      const diff = r.bb - r.rem;
+      const ex   = diff > 0 ? diff : 0;
+      const sh   = diff < 0 ? -diff : 0;
+      return '<tr data-denom="' + r.denom + '" data-machine="ATM">' +
       '<td>' + r.label + '</td>' +
       '<td>' + roCell(r.opening) + '</td>' +
       '<td>' + roCell(r.dis)     + '</td>' +
       '<td>' + roCell(r.rem)     + '</td>' +
-      '<td class="bb-col">' + bbCell(0, r.denom) + '</td>' +
-      '<td><span class="cell-excess ro-val" style="color:var(--accent)">0</span></td>' +
-      '<td><span class="cell-short ro-val" style="color:var(--warn)">' + fmt(r.rem) + '</span></td>' +
+      '<td class="bb-col">' + bbCell(r.bb, r.denom) + '</td>' +
+      '<td><span class="cell-excess ro-val" style="color:var(--accent)">' + fmt(ex) + '</span></td>' +
+      '<td><span class="cell-short ro-val" style="color:var(--warn)">'   + fmt(sh) + '</span></td>' +
       '<td>' + roCell(r.loading) + '</td>' +
-      '</tr>'
-    ).join('');
+      '</tr>';
+    }).join('');
 
-    const tO  = rows.reduce((s,r)=>s+r.opening*r.denom,0);
-    const tDi = rows.reduce((s,r)=>s+r.dis*r.denom,0);
-    const tR  = rows.reduce((s,r)=>s+r.rem*r.denom,0);
-    const tL  = rows.reduce((s,r)=>s+r.loading*r.denom,0);
+    const tO   = rows.reduce((s,r)=>s+r.opening*r.denom,0);
+    const tDi  = rows.reduce((s,r)=>s+r.dis*r.denom,0);
+    const tR   = rows.reduce((s,r)=>s+r.rem*r.denom,0);
+    const tL   = rows.reduce((s,r)=>s+r.loading*r.denom,0);
+    const tBBv = rows.reduce((s,r)=>s+r.bb*r.denom,0);
+    const tExv = rows.reduce((s,r)=>s+Math.max(r.bb-r.rem,0)*r.denom,0);
+    const tShv = rows.reduce((s,r)=>s+Math.max(r.rem-r.bb,0)*r.denom,0);
 
     document.getElementById('tableFoot').innerHTML =
       '<tr class="total-row">' +
       '<td>Totals</td>' +
-      '<td id="tOpening">' + fmt(tO)  + '</td>' +
-      '<td id="tDis">'     + fmt(tDi) + '</td>' +
-      '<td id="tRem">'     + fmt(tR)  + '</td>' +
-      '<td id="tBB">0</td>' +
-      '<td id="tEx">0</td>' +
-      '<td id="tShort">'   + fmt(tR)  + '</td>' +
-      '<td id="tLoading">' + fmt(tL)  + '</td>' +
+      '<td id="tOpening">' + fmt(tO)   + '</td>' +
+      '<td id="tDis">'     + fmt(tDi)  + '</td>' +
+      '<td id="tRem">'     + fmt(tR)   + '</td>' +
+      '<td id="tBB">'      + fmt(tBBv) + '</td>' +
+      '<td id="tEx">'      + fmt(tExv) + '</td>' +
+      '<td id="tShort">'   + fmt(tShv) + '</td>' +
+      '<td id="tLoading">' + fmt(tL)   + '</td>' +
       '</tr>';
   }
 

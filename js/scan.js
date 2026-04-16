@@ -1,18 +1,50 @@
 // ── scan.js — Image Upload, Compression, API Call ──
 
+// Size thresholds
+const SIZE_WARN_BYTES   = 3 * 1024 * 1024;  // 3 MB — show optimize notice
+const SIZE_AUTO_QUALITY = 0.60;              // extra compression quality for large files
+const ORIENT_WARN_RATIO = 1.6;              // width/height > this = likely landscape (wrong)
+
 function handleFile(file) {
   if (!file) return;
-  const maxPx = window.innerWidth < 768 ? 800 : 1000;
-  compressImage(file, maxPx, 0.72).then(({ base64, mime }) => {
+
+  const isLarge    = file.size > SIZE_WARN_BYTES;
+  const maxPx      = window.innerWidth < 768 ? 800 : 1000;
+  const quality    = isLarge ? SIZE_AUTO_QUALITY : 0.72;
+
+  // Show optimizing notice if large
+  if (isLarge) showToast('Large image detected — auto-optimizing...', '');
+
+  compressImage(file, maxPx, quality).then(({ base64, mime, width, height }) => {
     imageBase64 = base64; imageMime = mime;
-    document.getElementById('previewImg').src = `data:${mime};base64,${base64}`;
-    document.getElementById('previewName').textContent = file.name;
+
+    const previewImg = document.getElementById('previewImg');
+    previewImg.src = `data:${mime};base64,${base64}`;
+    document.getElementById('previewName').textContent =
+      file.name + (isLarge ? ' · Auto-optimized' : '');
+
+    // Orientation check: landscape image is almost always wrong for a receipt
+    const ratio = width / height;
+    const orientWarn = document.getElementById('orientWarn');
+    if (ratio > ORIENT_WARN_RATIO) {
+      orientWarn.style.display = 'flex';
+    } else {
+      orientWarn.style.display = 'none';
+    }
+
     document.getElementById('uploadZone').style.display = 'none';
     document.getElementById('previewRow').classList.add('show');
     hide('resultWrap'); hide('resetBar'); hide('errorBox');
     document.getElementById('invalidBox').classList.remove('show');
     document.getElementById('balancesCard').classList.remove('show');
   });
+}
+
+// Trigger file picker for retake (re-uses same hidden input)
+function retakePhoto() {
+  const fi = document.getElementById('fileInput');
+  fi.value = '';
+  fi.click();
 }
 
 function compressImage(file, maxSize, quality) {
@@ -24,7 +56,7 @@ function compressImage(file, maxSize, quality) {
         let w = img.width, h = img.height;
         if (w > maxSize || h > maxSize) {
           if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
-          else { w = Math.round(w * maxSize / h); h = maxSize; }
+          else        { w = Math.round(w * maxSize / h); h = maxSize; }
         }
         const canvas = document.createElement('canvas');
         canvas.width = w; canvas.height = h;
@@ -32,7 +64,7 @@ function compressImage(file, maxSize, quality) {
         ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
         ctx.drawImage(img, 0, 0, w, h);
         const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        resolve({ base64: dataUrl.split(',')[1], mime: 'image/jpeg' });
+        resolve({ base64: dataUrl.split(',')[1], mime: 'image/jpeg', width: img.width, height: img.height });
       };
       img.src = e.target.result;
     };
@@ -70,7 +102,10 @@ async function scanReceipt() {
     }
     pendingData = data;
     hide('processing');
-    ['load100','load500','load200'].forEach(id => document.getElementById(id).value = '');
+    ['load100','load500','load200','bb100','bb500','bb200'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
     var errEl = document.getElementById('loadingError');
     if (errEl) errEl.style.display = 'none';
     document.getElementById('loadingModal').classList.add('show');
@@ -92,9 +127,12 @@ function confirmLoading() {
   const v100 = document.getElementById('load100').value.trim();
   const v500 = document.getElementById('load500').value.trim();
   const v200 = document.getElementById('load200').value.trim();
+  const b100 = document.getElementById('bb100').value.trim();
+  const b500 = document.getElementById('bb500').value.trim();
+  const b200 = document.getElementById('bb200').value.trim();
   const errEl = document.getElementById('loadingError');
 
-  if (v100 === '' || v500 === '' || v200 === '') {
+  if (v100 === '' || v500 === '' || v200 === '' || b100 === '' || b500 === '' || b200 === '') {
     if (errEl) errEl.style.display = 'block';
     return;
   }
@@ -105,6 +143,11 @@ function confirmLoading() {
     l500: parseInt(v500) || 0,
     l200: parseInt(v200) || 0
   };
+  pendingBroughtBack = {
+    bb100: parseInt(b100) || 0,
+    bb500: parseInt(b500) || 0,
+    bb200: parseInt(b200) || 0
+  };
   document.getElementById('loadingModal').classList.remove('show');
-  renderResult(pendingData, pendingLoading);
+  renderResult(pendingData, pendingLoading, pendingBroughtBack);
 }
