@@ -540,11 +540,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 <div class="modal-overlay" id="loadingModal">
   <div class="modal">
     <div style="width:40px;height:4px;background:var(--border2);border-radius:4px;margin:0 auto 16px"></div>
-    <div class="modal-title">Loading &amp; Brought Back</div>
-    <div class="modal-sub">Enter note counts for each denomination</div>
+    <div class="modal-title">Loading Details</div>
+    <div class="modal-sub">Enter notes loaded into each cassette.</div>
 
-    <!-- Loading Section -->
-    <div class="modal-section loading">📥 &nbsp;Loading — Notes put in</div>
     <div class="modal-grid">
       <div class="modal-card">
         <span class="denom-tag">₹100</span>
@@ -563,27 +561,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
       </div>
     </div>
 
-    <!-- Brought Back Section -->
-    <div class="modal-section bb">📤 &nbsp;Brought Back — Notes counted back</div>
-    <div class="modal-grid">
-      <div class="modal-card bb-card">
-        <span class="denom-tag" style="color:#4db8ff;border-color:#4db8ff;background:#0a1a2e">₹100</span>
-        <div class="modal-card-label">BB Count</div>
-        <input type="number" id="bb100" placeholder="0" min="0" inputmode="numeric">
-      </div>
-      <div class="modal-card bb-card">
-        <span class="denom-tag" style="color:#4db8ff;border-color:#4db8ff;background:#0a1a2e">₹500</span>
-        <div class="modal-card-label">BB Count</div>
-        <input type="number" id="bb500" placeholder="0" min="0" inputmode="numeric">
-      </div>
-      <div class="modal-card bb-card">
-        <span class="denom-tag" style="color:#4db8ff;border-color:#4db8ff;background:#0a1a2e">₹200</span>
-        <div class="modal-card-label">BB Count</div>
-        <input type="number" id="bb200" placeholder="0" min="0" inputmode="numeric">
-      </div>
-    </div>
-
-    <div id="loadingError" style="font-family:var(--mono);font-size:11px;color:var(--danger);margin-top:10px;display:none;text-align:center">⚠ Please enter all 6 values to proceed.</div>
+    <div id="loadingError" style="font-family:var(--mono);font-size:11px;color:var(--danger);margin-top:10px;display:none;text-align:center">⚠ Please enter loading count for all cassettes.</div>
     <div class="modal-actions" style="margin-top:16px">
       <button class="btn" onclick="confirmLoading()" style="width:100%;padding:14px;font-size:13px">Confirm &amp; Continue</button>
     </div>

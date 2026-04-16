@@ -102,7 +102,7 @@ async function scanReceipt() {
     }
     pendingData = data;
     hide('processing');
-    ['load100','load500','load200','bb100','bb500','bb200'].forEach(id => {
+    ['load100','load500','load200'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
@@ -127,12 +127,9 @@ function confirmLoading() {
   const v100 = document.getElementById('load100').value.trim();
   const v500 = document.getElementById('load500').value.trim();
   const v200 = document.getElementById('load200').value.trim();
-  const b100 = document.getElementById('bb100').value.trim();
-  const b500 = document.getElementById('bb500').value.trim();
-  const b200 = document.getElementById('bb200').value.trim();
   const errEl = document.getElementById('loadingError');
 
-  if (v100 === '' || v500 === '' || v200 === '' || b100 === '' || b500 === '' || b200 === '') {
+  if (v100 === '' || v500 === '' || v200 === '') {
     if (errEl) errEl.style.display = 'block';
     return;
   }
@@ -143,11 +140,6 @@ function confirmLoading() {
     l500: parseInt(v500) || 0,
     l200: parseInt(v200) || 0
   };
-  pendingBroughtBack = {
-    bb100: parseInt(b100) || 0,
-    bb500: parseInt(b500) || 0,
-    bb200: parseInt(b200) || 0
-  };
   document.getElementById('loadingModal').classList.remove('show');
-  renderResult(pendingData, pendingLoading, pendingBroughtBack);
+  renderResult(pendingData, pendingLoading);
 }
