@@ -105,11 +105,25 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .proc-step{font-size:13px;color:var(--text);margin-top:5px}
 
 /* Loading Modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:100;align-items:flex-end;justify-content:center;padding:0}
 .modal-overlay.show{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;width:100%;max-width:360px}
-.modal-title{font-size:16px;font-weight:500;margin-bottom:4px}
-.modal-sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px 16px 0 0;padding:20px 16px 32px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:4px;text-align:center}
+.modal-sub{font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:16px;line-height:1.5;text-align:center}
+/* Section headers */
+.modal-section{font-family:var(--mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;padding:6px 10px;border-radius:6px;margin:14px 0 10px;font-weight:600}
+.modal-section.loading{background:#0a1f14;color:var(--accent);border:1px solid #1a5c32}
+.modal-section.bb{background:#0a1a2e;color:#4db8ff;border:1px solid #1a3a5c}
+/* 3-col card grid for denom entries */
+.modal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px}
+.modal-card{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 6px}
+.modal-card.bb-card{background:#060f1a;border-color:#1a3a5c}
+.modal-card .denom-tag{font-size:11px;padding:3px 8px;min-width:unset}
+.modal-card input{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:8px 4px;color:var(--text);font-family:var(--mono);font-size:15px;outline:none;text-align:center;transition:border-color 0.2s}
+.modal-card input:focus{border-color:var(--accent)}
+.modal-card.bb-card input{border-color:#1a3a5c;color:#4db8ff}
+.modal-card.bb-card input:focus{border-color:#4db8ff}
+.modal-card-label{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase}
 .modal-field{display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .denom-tag{font-family:var(--mono);font-size:10px;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent);border-radius:4px;padding:3px 8px;min-width:44px;text-align:center;flex-shrink:0}
 .modal-field label{font-family:var(--mono);font-size:11px;color:var(--muted);width:48px;flex-shrink:0}
@@ -362,7 +376,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
         <div id="g_id_onload"
           data-client_id="588505202142-qakst823p9ghvdhuthqa49dq3l8mlkm9.apps.googleusercontent.com"
           data-callback="handleGoogleLogin"
-          data-auto_prompt="false"></div>
+          data-auto_prompt="false"
+          data-auto_select="true"></div>
         <button class="btn-login" onclick="triggerGoogleLogin('header')">🔑 Sign in</button>
       </div>
       <div id="authLoggedIn" style="display:none;align-items:center;gap:8px">
@@ -524,24 +539,53 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 <!-- Loading Modal -->
 <div class="modal-overlay" id="loadingModal">
   <div class="modal">
-    <div class="modal-title">Loading &amp; Brought Back Details</div>
-    <div class="modal-sub" style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:14px;line-height:1.6">Enter notes loaded into each cassette and notes physically brought back.</div>
+    <div style="width:40px;height:4px;background:var(--border2);border-radius:4px;margin:0 auto 16px"></div>
+    <div class="modal-title">Loading &amp; Brought Back</div>
+    <div class="modal-sub">Enter note counts for each denomination</div>
 
-    <!-- Loading -->
-    <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Loading (Notes put in)</div>
-    <div class="modal-field"><span class="denom-tag">₹100</span><label>Loaded</label><input type="number" id="load100" placeholder="Enter count" min="0" value=""></div>
-    <div class="modal-field"><span class="denom-tag">₹500</span><label>Loaded</label><input type="number" id="load500" placeholder="Enter count" min="0" value=""></div>
-    <div class="modal-field"><span class="denom-tag">₹200</span><label>Loaded</label><input type="number" id="load200" placeholder="Enter count" min="0" value=""></div>
+    <!-- Loading Section -->
+    <div class="modal-section loading">📥 &nbsp;Loading — Notes put in</div>
+    <div class="modal-grid">
+      <div class="modal-card">
+        <span class="denom-tag">₹100</span>
+        <div class="modal-card-label">Loaded</div>
+        <input type="number" id="load100" placeholder="0" min="0" inputmode="numeric">
+      </div>
+      <div class="modal-card">
+        <span class="denom-tag">₹500</span>
+        <div class="modal-card-label">Loaded</div>
+        <input type="number" id="load500" placeholder="0" min="0" inputmode="numeric">
+      </div>
+      <div class="modal-card">
+        <span class="denom-tag">₹200</span>
+        <div class="modal-card-label">Loaded</div>
+        <input type="number" id="load200" placeholder="0" min="0" inputmode="numeric">
+      </div>
+    </div>
 
-    <!-- Brought Back -->
-    <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#4db8ff;margin-top:16px;margin-bottom:8px">Brought Back (Notes counted back)</div>
-    <div class="modal-field"><span class="denom-tag" style="color:#4db8ff;border-color:#4db8ff;background:#0a1a2e">₹100</span><label>BB</label><input type="number" id="bb100" placeholder="Enter count" min="0" value="" style="border-color:#1a3a5c"></div>
-    <div class="modal-field"><span class="denom-tag" style="color:#4db8ff;border-color:#4db8ff;background:#0a1a2e">₹500</span><label>BB</label><input type="number" id="bb500" placeholder="Enter count" min="0" value="" style="border-color:#1a3a5c"></div>
-    <div class="modal-field"><span class="denom-tag" style="color:#4db8ff;border-color:#4db8ff;background:#0a1a2e">₹200</span><label>BB</label><input type="number" id="bb200" placeholder="Enter count" min="0" value="" style="border-color:#1a3a5c"></div>
+    <!-- Brought Back Section -->
+    <div class="modal-section bb">📤 &nbsp;Brought Back — Notes counted back</div>
+    <div class="modal-grid">
+      <div class="modal-card bb-card">
+        <span class="denom-tag" style="color:#4db8ff;border-color:#4db8ff;background:#0a1a2e">₹100</span>
+        <div class="modal-card-label">BB Count</div>
+        <input type="number" id="bb100" placeholder="0" min="0" inputmode="numeric">
+      </div>
+      <div class="modal-card bb-card">
+        <span class="denom-tag" style="color:#4db8ff;border-color:#4db8ff;background:#0a1a2e">₹500</span>
+        <div class="modal-card-label">BB Count</div>
+        <input type="number" id="bb500" placeholder="0" min="0" inputmode="numeric">
+      </div>
+      <div class="modal-card bb-card">
+        <span class="denom-tag" style="color:#4db8ff;border-color:#4db8ff;background:#0a1a2e">₹200</span>
+        <div class="modal-card-label">BB Count</div>
+        <input type="number" id="bb200" placeholder="0" min="0" inputmode="numeric">
+      </div>
+    </div>
 
-    <div id="loadingError" style="font-family:var(--mono);font-size:11px;color:var(--danger);margin-top:8px;display:none">⚠ Please enter all Loading and Brought Back amounts to proceed.</div>
-    <div class="modal-actions">
-      <button class="btn" onclick="confirmLoading()" style="width:100%">Confirm &amp; Continue</button>
+    <div id="loadingError" style="font-family:var(--mono);font-size:11px;color:var(--danger);margin-top:10px;display:none;text-align:center">⚠ Please enter all 6 values to proceed.</div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn" onclick="confirmLoading()" style="width:100%;padding:14px;font-size:13px">Confirm &amp; Continue</button>
     </div>
   </div>
 </div>
