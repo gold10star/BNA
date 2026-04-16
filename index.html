@@ -451,7 +451,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     </div>
     <div class="brought-back">
       <div class="warn-tip">✎ Enter Brought Back count per denomination · Excess &amp; Short auto-calculated · Physical Balance = Sum of Brought Back</div>
-      <div class="bb-calc" id="bbCalc"></div>
+      <div class="bb-calc" id="bbCalc" style="display:none"></div>
       <div class="bb-final">
         <div>
           <div class="bb-label">Physical Balance</div>
@@ -614,7 +614,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 <!-- Service Worker + PWA Install Prompt -->
 <script>
 // ── Service Worker Registration ──
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && location.hostname !== 'www.claudeusercontent.com') {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then(reg => console.log('[SW] Registered:', reg.scope))
