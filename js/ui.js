@@ -275,11 +275,11 @@ function recalcPhysicalBalance() {
   document.getElementById('bbValue').textContent = '\u20b9' + fmt(tBB);
 
   let note = '';
-  if (tEx > 0 && tSh > 0) note = 'Excess \u20b9' + fmt(tEx) + ' \u00b7 Short \u20b9' + fmt(tSh);
-  else if (tEx > 0)        note = 'Excess \u20b9' + fmt(tEx) + ' detected';
-  else if (tSh > 0)        note = 'Short \u20b9'  + fmt(tSh) + ' detected';
-  else if (tBB > 0)        note = 'All cassettes tallied';
-  else                     note = 'Enter Brought Back amounts above';
+  if (tBB === 0)               note = 'Enter Brought Back amounts above \u2191';
+  else if (tEx > 0 && tSh > 0) note = 'Excess \u20b9' + fmt(tEx) + ' \u00b7 Short \u20b9' + fmt(tSh);
+  else if (tEx > 0)             note = 'Excess \u20b9' + fmt(tEx) + ' detected';
+  else if (tSh > 0)             note = 'Short \u20b9'  + fmt(tSh) + ' detected';
+  else                          note = 'All cassettes tallied \u2713';
   document.getElementById('bbNote').textContent = note;
 }
 
@@ -301,7 +301,7 @@ function calcBalances() {
   const pvg = phy - gl, pvs = phy - sw;
   const grid = document.getElementById('trafficGrid');
   grid.style.display = 'flex'; grid.innerHTML = '';
-  grid.appendChild(mkTraffic('Physical Balance',   phy, 'Actual', true));
+  grid.appendChild(mkTraffic('Brought Back',       phy, 'Actual', true));
   grid.appendChild(mkTraffic('Physical vs GL',     pvg, pvg===0?'Tallied':pvg>0?'Excess':'Short'));
   grid.appendChild(mkTraffic('Physical vs Switch', pvs, pvs===0?'Tallied':pvs>0?'Excess':'Short'));
   lastSwitchBal = sw; lastGLBal = gl;
@@ -464,7 +464,7 @@ function openHistoryRecordModal(record) {
         '<div class="traffic-badge">' + badge + '</div></div></div>';
     };
     trafficHTML = '<div style="margin-top:16px">' +
-      mkT('Physical Balance',   phy, 'Actual', true) +
+      mkT('Brought Back',       phy, 'Actual', true) +
       mkT('Physical vs GL',     pvg, pvg===0?'Tallied':pvg>0?'Excess':'Short') +
       mkT('Physical vs Switch', pvs, pvs===0?'Tallied':pvs>0?'Excess':'Short') +
       '</div>';
