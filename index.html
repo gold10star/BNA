@@ -71,6 +71,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .card-title::after{content:'';flex:1;height:1px;background:var(--border)}
 
 /* Upload */
+.upload-btn-card{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:20px 12px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;color:var(--text)}
+.upload-btn-card:hover,.upload-btn-card:active{border-color:var(--accent);background:var(--accent-dim)}
 .upload-zone{border:1px dashed var(--border2);border-radius:var(--radius);padding:32px 20px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;position:relative;background:var(--surface)}
 .upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:var(--accent-dim)}
 .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
@@ -421,11 +423,26 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   <!-- Upload -->
   <div class="card">
     <div class="card-title">Upload Host Total Receipt</div>
-    <div class="upload-zone" id="uploadZone">
-      <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])">
-      <div class="upload-icon">🧾</div>
-      <div class="upload-title">Tap to upload Host Total Receipt</div>
-      <div class="upload-sub">JPG · PNG · WEBP — camera or gallery</div>
+
+    <!-- Hidden inputs -->
+    <input type="file" id="fileInput"        accept="image/*"                 onchange="handleFile(this.files[0])" style="display:none">
+    <input type="file" id="fileInputCamera"  accept="image/*" capture="environment" onchange="handleFile(this.files[0])" style="display:none">
+
+    <!-- Upload buttons — shown before image selected -->
+    <div id="uploadZone">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px">
+        <button class="upload-btn-card" onclick="document.getElementById('fileInputCamera').click()">
+          <span style="font-size:28px;display:block;margin-bottom:8px">📷</span>
+          <div style="font-size:14px;font-weight:500;margin-bottom:3px">Take Photo</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted)">Open camera directly</div>
+        </button>
+        <button class="upload-btn-card" onclick="document.getElementById('fileInput').click()">
+          <span style="font-size:28px;display:block;margin-bottom:8px">🖼</span>
+          <div style="font-size:14px;font-weight:500;margin-bottom:3px">Choose Photo</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted)">From gallery or files</div>
+        </button>
+      </div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;margin-top:8px">JPG · PNG · WEBP</div>
     </div>
     <div class="preview-row" id="previewRow">
       <img class="preview-thumb" id="previewImg" src="" alt="">
@@ -443,7 +460,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
         <div class="preview-hint">Tap Scan to read the receipt.</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-block" id="scanBtn" onclick="scanReceipt()">⟳ &nbsp;Scan &amp; Reconcile</button>
-          <button class="btn btn-outline btn-sm" onclick="retakePhoto()" title="Upload a different photo" style="white-space:nowrap">📷 Retake</button>
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('fileInputCamera').click()" title="Retake with camera">📷</button>
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('fileInput').click()" title="Choose from gallery">🖼</button>
         </div>
       </div>
     </div>

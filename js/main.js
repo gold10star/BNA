@@ -79,6 +79,8 @@ function resetAll() {
   imageBase64 = ''; pendingData = null; currentBroughtBack = 0;
   balancesCalculated = false; lastSwitchBal = 0; lastGLBal = 0;
   document.getElementById('fileInput').value = '';
+  const fc = document.getElementById('fileInputCamera');
+  if (fc) fc.value = '';
   document.getElementById('uploadZone').style.display = '';
   document.getElementById('previewRow').classList.remove('show');
   ['switchBal','glBal'].forEach(id => document.getElementById(id).value = '');

@@ -23,6 +23,8 @@ function showInvalidReceiptError(reason) {
   document.getElementById('invalidBox').classList.add('show');
   imageBase64 = '';
   document.getElementById('fileInput').value = '';
+  const fc = document.getElementById('fileInputCamera');
+  if (fc) fc.value = '';
   document.getElementById('uploadZone').style.display = '';
   document.getElementById('previewRow').classList.remove('show');
   document.getElementById('invalidBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
