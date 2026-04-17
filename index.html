@@ -169,12 +169,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   outline:none;
   transition:background 0.15s,border-color 0.15s,box-shadow 0.15s;
 }
-.bb-editable:focus{
-  background:#0d2040;
-  border-color:#7dd3fc !important;
-  box-shadow:0 0 0 2px #4db8ff33;
-  color:#7dd3fc;
-}
+.bb-editable:empty:before{content:'0';color:#2a4a6a;pointer-events:none}
+.bb-editable:focus:empty:before{content:'';}
 
 /* Physical Balance */
 .brought-back{padding:14px 16px;border-top:1px solid var(--border)}

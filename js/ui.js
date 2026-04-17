@@ -59,7 +59,16 @@ function roCell(val) {
 
 // ── EDITABLE Brought Back cell ──
 function bbCell(val, denom) {
-  return '<span class="editable bb-editable" contenteditable="true" data-field="bb" data-denom="' + denom + '" oninput="onBBInput(this)" placeholder="0">' + val + '</span>';
+  return '<span class="editable bb-editable" contenteditable="true" data-field="bb" data-denom="' + denom + '" oninput="onBBInput(this)" onfocus="selectAll(this)"></span>';
+}
+
+// Select all text on focus so user can just start typing
+function selectAll(el) {
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
 }
 
 // ── Called on every Brought Back keystroke ──
@@ -341,7 +350,7 @@ function collectTableRows() {
     const exEl    = row.querySelector('.cell-excess');
     const shEl    = row.querySelector('.cell-short');
 
-    const bb = parseInt((bbEl?.innerText || bbEl?.textContent || '0').replace(/,/g,'')) || 0;
+    const bb = parseInt((bbEl?.innerText || bbEl?.textContent || '').replace(/,/g,'')) || 0;
     const ex = parseInt((exEl?.innerText || exEl?.textContent || '0').replace(/,/g,'')) || 0;
     const sh = parseInt((shEl?.innerText || shEl?.textContent || '0').replace(/,/g,'')) || 0;
 
