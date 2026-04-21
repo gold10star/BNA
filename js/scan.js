@@ -104,7 +104,7 @@ async function scanReceipt() {
     hide('processing');
     ['load100','load500','load200'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.value = '';
+      if (el) el.value = '0';
     });
     var errEl = document.getElementById('loadingError');
     if (errEl) errEl.style.display = 'none';

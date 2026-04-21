@@ -45,7 +45,8 @@
   --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
   --radius:8px
 }
-body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;padding:0 0 60px;padding-bottom:calc(60px + env(safe-area-inset-bottom));padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;padding:0 0 60px;padding-top:env(safe-area-inset-top);padding-bottom:calc(60px + env(safe-area-inset-bottom));padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
 .wrap{max-width:720px;margin:0 auto;padding:0 16px}
 
 /* Header */
@@ -143,11 +144,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 
 /* Table */
 .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.reg-table{width:100%;border-collapse:collapse;min-width:380px}
+.reg-table{width:100%;border-collapse:separate;border-spacing:0;min-width:380px}
 .reg-table th{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-align:right;padding:10px 12px 8px;border-bottom:1px solid var(--border);font-weight:400;white-space:nowrap}
-.reg-table th:first-child{text-align:left}
+.reg-table th:first-child{text-align:left;position:sticky;left:0;z-index:2;background:var(--surface2)}
 .reg-table td{font-family:var(--mono);font-size:12px;text-align:right;padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text)}
-.reg-table td:first-child{text-align:left;font-weight:500;color:var(--accent2)}
+.reg-table td:first-child{text-align:left;font-weight:500;color:var(--accent2);position:sticky;left:0;z-index:1;background:var(--surface)}
+.reg-table .total-row td:first-child{background:var(--surface2)}
 .reg-table td.bb-col{background:#060f1a;border-left:1px solid #1a3a5c;border-right:1px solid #1a3a5c}
 .reg-table tbody tr:last-child td{border-bottom:none}
 .reg-table .total-row td{font-weight:600;background:var(--surface2);border-top:1px solid var(--border2);border-bottom:none}
@@ -561,17 +563,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
       <div class="modal-card">
         <span class="denom-tag">₹100</span>
         <div class="modal-card-label">Loaded</div>
-        <input type="number" id="load100" placeholder="0" min="0" inputmode="numeric">
+        <input type="number" id="load100" placeholder="0" min="0" value="0" inputmode="numeric">
       </div>
       <div class="modal-card">
         <span class="denom-tag">₹500</span>
         <div class="modal-card-label">Loaded</div>
-        <input type="number" id="load500" placeholder="0" min="0" inputmode="numeric">
+        <input type="number" id="load500" placeholder="0" min="0" value="0" inputmode="numeric">
       </div>
       <div class="modal-card">
         <span class="denom-tag">₹200</span>
         <div class="modal-card-label">Loaded</div>
-        <input type="number" id="load200" placeholder="0" min="0" inputmode="numeric">
+        <input type="number" id="load200" placeholder="0" min="0" value="0" inputmode="numeric">
       </div>
     </div>
 
