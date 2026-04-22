@@ -27,8 +27,26 @@ async function saveRecord() {
     existing.splice(dupIdx, 1);
   }
 
+  // Upload image to imgBB now if not already done (for cross-device history view)
+  var receiptImgUrl = window._lastReceiptImgUrl || '';
+  if (!receiptImgUrl && imageBase64) {
+    try {
+      var upResp = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: imageBase64, imageMime: imageMime })
+      });
+      if (upResp.ok) {
+        var upData = await upResp.json();
+        receiptImgUrl = upData.url || '';
+        window._lastReceiptImgUrl = receiptImgUrl;
+      }
+    } catch(e) {
+      console.warn('Image upload on save failed:', e);
+    }
+  }
+
   var tableRows = collectTableRows();
-  var isBNA = currentMachineType === 'BNA';
   var tRem = 0, tEx = 0, tSh = 0;
   tableRows.forEach(function(r) {
     tRem += r.remaining * r.denom;
@@ -40,15 +58,15 @@ async function saveRecord() {
   var pvs = phy - (lastSwitchBal || 0);
 
   var record = {
-    id:           Date.now(),
-    savedAt:      new Date().toISOString(),
-    receiptImgUrl: window._lastReceiptImgUrl || '',
-    userEmail:    currentUser.email,
-    machine_type: currentMachineType,
-    atm_id:       atmId,
-    ref_no:       refNo,
-    date:         document.getElementById('resultDate').textContent,
-    ref:          document.getElementById('resultRef').textContent,
+    id:            Date.now(),
+    savedAt:       new Date().toISOString(),
+    receiptImgUrl: receiptImgUrl,
+    userEmail:     currentUser.email,
+    machine_type:  currentMachineType,
+    atm_id:        atmId,
+    ref_no:        refNo,
+    date:          document.getElementById('resultDate').textContent,
+    ref:           document.getElementById('resultRef').textContent,
     physicalBalance: phy,
     switchBalance:   lastSwitchBal || 0,
     glBalance:       lastGLBal     || 0,

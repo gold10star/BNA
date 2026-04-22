@@ -93,22 +93,24 @@ function onBBInput(el) {
 function recalcRow(row) {
   const isBNA   = row.dataset.machine === 'BNA';
   const roSpans = row.querySelectorAll('.ro-val:not(.cell-excess):not(.cell-short)');
+  const remIdx  = isBNA ? 3 : 2;
+  const rem     = parseInt((roSpans[remIdx]?.innerText || '0').replace(/,/g,'')) || 0;
 
-  // Remaining index among ro-val spans (excluding excess/short cells):
-  // BNA: opening(0), dep(1), dis(2), rem(3), loading(4)
-  // ATM: opening(0), dis(1), rem(2), loading(3)
-  const remIdx = isBNA ? 3 : 2;
-  const rem = parseInt((roSpans[remIdx]?.innerText || '0').replace(/,/g,'')) || 0;
+  const bbEl   = row.querySelector('[data-field="bb"]');
+  const bbText = (bbEl?.innerText || bbEl?.textContent || '').trim();
+  const exEl   = row.querySelector('.cell-excess');
+  const shEl   = row.querySelector('.cell-short');
 
-  const bbEl  = row.querySelector('[data-field="bb"]');
-  const bb    = parseInt((bbEl?.innerText || bbEl?.textContent || '0').replace(/,/g,'')) || 0;
+  if (bbText === '') {
+    if (exEl) exEl.textContent = '—';
+    if (shEl) shEl.textContent = '—';
+    return;
+  }
 
+  const bb     = parseInt(bbText.replace(/,/g,'')) || 0;
   const diff   = bb - rem;
   const excess = diff > 0 ? diff : 0;
   const short  = diff < 0 ? -diff : 0;
-
-  const exEl = row.querySelector('.cell-excess');
-  const shEl = row.querySelector('.cell-short');
   if (exEl) exEl.textContent = fmt(excess);
   if (shEl) shEl.textContent = fmt(short);
 }
@@ -153,8 +155,8 @@ function renderResult(data, loading) {
       '<td>' + roCell(r.dis)      + '</td>' +
       '<td>' + roCell(r.rem)      + '</td>' +
       '<td class="bb-col">' + bbCell(0, r.denom) + '</td>' +
-      '<td><span class="cell-excess ro-val" style="color:var(--accent)">0</span></td>' +
-      '<td><span class="cell-short ro-val" style="color:var(--warn)">' + fmt(r.rem) + '</span></td>' +
+      '<td><span class="cell-excess ro-val" style="color:var(--accent)">—</span></td>' +
+      '<td><span class="cell-short ro-val" style="color:var(--warn)">—</span></td>' +
       '<td>' + roCell(r.loading)  + '</td>' +
       '</tr>'
     ).join('');
@@ -172,9 +174,9 @@ function renderResult(data, loading) {
       '<td id="tDep">'     + fmt(tD)  + '</td>' +
       '<td id="tDis">'     + fmt(tDi) + '</td>' +
       '<td id="tRem">'     + fmt(tR)  + '</td>' +
-      '<td id="tBB">0</td>' +
-      '<td id="tEx">0</td>' +
-      '<td id="tShort">0</td>' +
+      '<td id="tBB">—</td>' +
+      '<td id="tEx">—</td>' +
+      '<td id="tShort">—</td>' +
       '<td id="tLoading">' + fmt(tL)  + '</td>' +
       '</tr>';
 
@@ -202,8 +204,8 @@ function renderResult(data, loading) {
       '<td>' + roCell(r.dis)     + '</td>' +
       '<td>' + roCell(r.rem)     + '</td>' +
       '<td class="bb-col">' + bbCell(0, r.denom) + '</td>' +
-      '<td><span class="cell-excess ro-val" style="color:var(--accent)">0</span></td>' +
-      '<td><span class="cell-short ro-val" style="color:var(--warn)">' + fmt(r.rem) + '</span></td>' +
+      '<td><span class="cell-excess ro-val" style="color:var(--accent)">—</span></td>' +
+      '<td><span class="cell-short ro-val" style="color:var(--warn)">—</span></td>' +
       '<td>' + roCell(r.loading) + '</td>' +
       '</tr>'
     ).join('');
@@ -219,9 +221,9 @@ function renderResult(data, loading) {
       '<td id="tOpening">' + fmt(tO)  + '</td>' +
       '<td id="tDis">'     + fmt(tDi) + '</td>' +
       '<td id="tRem">'     + fmt(tR)  + '</td>' +
-      '<td id="tBB">0</td>' +
-      '<td id="tEx">0</td>' +
-      '<td id="tShort">0</td>' +
+      '<td id="tBB">—</td>' +
+      '<td id="tEx">—</td>' +
+      '<td id="tShort">—</td>' +
       '<td id="tLoading">' + fmt(tL)  + '</td>' +
       '</tr>';
   }
@@ -232,6 +234,18 @@ function renderResult(data, loading) {
   balancesCalculated = false;
   updateActionButtons();
   recalcPhysicalBalance();
+
+  // Suggest remaining balance as placeholder for Switch & GL inputs
+  const tRemForHint = isBNA
+    ? [t2,t3,t4].reduce((s,r)=>s+(r.remaining||0)*([100,500,200][[t2,t3,t4].indexOf(r)]),0)
+    : 0;
+  // Simpler: just use the tR total computed above
+  const remHint = document.getElementById('tRem')?.textContent?.replace(/,/g,'') || '';
+  if (remHint) {
+    document.getElementById('switchBal').placeholder = 'e.g. ' + remHint;
+    document.getElementById('glBal').placeholder     = 'e.g. ' + remHint;
+  }
+
   document.getElementById('resultWrap').scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
