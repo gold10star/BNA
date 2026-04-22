@@ -500,14 +500,21 @@ function openHistoryRecordModal(record) {
   // Show receipt image if saved in record
   var hrmImg = modal.querySelector('.hrm-img-wrap');
   if (hrmImg) {
+    // Use imgBB URL if available, otherwise use current session image as fallback
     var imgSrc = record.receiptImgUrl || '';
+    // Also check if this is the currently active record matching session
+    if (!imgSrc && imageBase64 && pendingData &&
+        pendingData.atm_id === record.atm_id &&
+        pendingData.ref_no === record.ref_no) {
+      imgSrc = 'data:' + (imageMime || 'image/jpeg') + ';base64,' + imageBase64;
+    }
     if (imgSrc) {
       hrmImg.innerHTML =
         '<button onclick="var w=this.nextElementSibling;var open=w.style.display!==\'none\';w.style.display=open?\'none\':\'block\';this.style.color=open?\'var(--muted)\':\'var(--accent)\'" ' +
-        'style="background:none;border:none;color:var(--muted);font-family:var(--mono);font-size:10px;cursor:pointer;display:flex;align-items:center;gap:6px;letter-spacing:0.04em;margin-bottom:6px">' +
+        'style="background:none;border:none;color:var(--muted);font-family:var(--mono);font-size:10px;cursor:pointer;display:flex;align-items:center;gap:6px;letter-spacing:0.04em;margin-bottom:6px;width:100%">' +
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' +
         'VIEW UPLOADED RECEIPT</button>' +
-        '<div style="display:none">' +
+        '<div style="display:none;margin-bottom:12px">' +
         '<img src="' + imgSrc + '" style="max-width:100%;border-radius:6px;border:1px solid var(--border)">' +
         '</div>';
       hrmImg.style.display = 'block';

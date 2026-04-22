@@ -166,26 +166,58 @@ function exportToExcel() {
   if (!records.length) { showToast('No records to export.', 'error'); return; }
   if (typeof XLSX === 'undefined') { showToast('SheetJS not loaded. Please retry.', 'error'); return; }
 
-  var rows = [['Date','Machine','ATM ID','REF No','Physical Balance','Switch Balance','GL Balance','Phys vs GL','Phys vs Switch','Status GL','Status Switch','Saved At']];
+  var wb = XLSX.utils.book_new();
+
+  // ── Sheet 1: Summary ──
+  var summaryRows = [['Date','Machine','ATM ID','REF No','Brought Back (Physical)','Switch Balance','GL Balance','Phys vs GL','Phys vs Switch','Status GL','Status Switch','Saved At']];
   records.forEach(function(r) {
     var pvg = r.physVsGL !== undefined ? r.physVsGL : '';
-    var pvs = r.physVsSwitch !== undefined ? r.physVsSwitch : '';    rows.push([
+    var pvs = r.physVsSwitch !== undefined ? r.physVsSwitch : '';
+    summaryRows.push([
       r.date || '', r.machine_type || '', r.atm_id || '', r.ref_no || '',
       r.physicalBalance || 0,
       r.switchBalance   || 0,
       r.glBalance       || 0,
-      pvg,
-      pvs,
+      pvg, pvs,
       pvg === '' ? '' : (pvg === 0 ? 'Tallied' : pvg > 0 ? 'Excess' : 'Short'),
       pvs === '' ? '' : (pvs === 0 ? 'Tallied' : pvs > 0 ? 'Excess' : 'Short'),
       r.savedAt ? new Date(r.savedAt).toLocaleString('en-IN') : ''
     ]);
   });
+  var ws1 = XLSX.utils.aoa_to_sheet(summaryRows);
+  ws1['!cols'] = summaryRows[0].map(function() { return { wch: 20 }; });
+  XLSX.utils.book_append_sheet(wb, ws1, 'Summary');
 
-  var ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = rows[0].map(function() { return { wch: 20 }; });
-  var wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Reconciliation History');
+  // ── Sheet 2: Denomination Detail ──
+  var isBNACheck = function(r) { return (r.machine_type || 'BNA').toUpperCase() === 'BNA'; };
+  var detailRows = [['Date','Machine','ATM ID','REF No','Denomination','Opening','Deposited','Dispensed','Remaining','Brought Back','Excess','Short','Loading']];
+  records.forEach(function(r) {
+    var isBNA = isBNACheck(r);
+    var tableRows = r.tableRows || [];
+    tableRows.forEach(function(tr) {
+      detailRows.push([
+        r.date         || '',
+        r.machine_type || '',
+        r.atm_id       || '',
+        r.ref_no       || '',
+        '₹' + (tr.denom || ''),
+        tr.opening      || 0,
+        isBNA ? (tr.deposited || 0) : '-',
+        tr.dispensed    || 0,
+        tr.remaining    || 0,
+        tr.broughtBack  || 0,
+        tr.excess       || 0,
+        tr.short        || 0,
+        tr.loading      || 0
+      ]);
+    });
+    // Blank row between records
+    detailRows.push([]);
+  });
+  var ws2 = XLSX.utils.aoa_to_sheet(detailRows);
+  ws2['!cols'] = detailRows[0].map(function() { return { wch: 16 }; });
+  XLSX.utils.book_append_sheet(wb, ws2, 'Denomination Detail');
+
   XLSX.writeFile(wb, 'ATM_BNA_Reconciliation_History.xlsx');
   showToast('Excel exported!', 'success');
 }
