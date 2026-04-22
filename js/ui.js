@@ -122,6 +122,7 @@ function renderResult(data, loading) {
   const mt = (data.machine_type || 'BNA').toUpperCase();
   currentMachineType = mt;
   const isBNA = mt === 'BNA';
+  let _remainingTotal = 0; // shared across BNA/ATM blocks
 
   const dateStr = mt + ' \u2014 ' + fmtDate(data.date || '');
   const refStr  = 'ATM: ' + (data.atm_id || '\u2014') + ' \u00b7 REF: ' + (data.ref_no || '\u2014');
@@ -166,6 +167,7 @@ function renderResult(data, loading) {
     const tDi  = rows.reduce((s,r)=>s+r.dis*r.denom,0);
     const tR   = rows.reduce((s,r)=>s+r.rem*r.denom,0);
     const tL   = rows.reduce((s,r)=>s+r.loading*r.denom,0);
+    _remainingTotal = tR;
 
     document.getElementById('tableFoot').innerHTML =
       '<tr class="total-row">' +
@@ -214,6 +216,7 @@ function renderResult(data, loading) {
     const tDi = rows.reduce((s,r)=>s+r.dis*r.denom,0);
     const tR  = rows.reduce((s,r)=>s+r.rem*r.denom,0);
     const tL  = rows.reduce((s,r)=>s+r.loading*r.denom,0);
+    _remainingTotal = tR;
 
     document.getElementById('tableFoot').innerHTML =
       '<tr class="total-row">' +
@@ -235,16 +238,10 @@ function renderResult(data, loading) {
   updateActionButtons();
   recalcPhysicalBalance();
 
-  // Suggest remaining balance as placeholder for Switch & GL inputs
-  const tRemForHint = isBNA
-    ? [t2,t3,t4].reduce((s,r)=>s+(r.remaining||0)*([100,500,200][[t2,t3,t4].indexOf(r)]),0)
-    : 0;
-  // Simpler: just use the tR total computed above
-  const remHint = document.getElementById('tRem')?.textContent?.replace(/,/g,'') || '';
-  if (remHint) {
-    document.getElementById('switchBal').placeholder = 'e.g. ' + remHint;
-    document.getElementById('glBal').placeholder     = 'e.g. ' + remHint;
-  }
+  // Set Switch & GL placeholder to total Remaining amount
+  const _hint = _remainingTotal > 0 ? Number(_remainingTotal).toLocaleString('en-IN') : '';
+  document.getElementById('switchBal').placeholder = _hint ? 'e.g. ' + _hint : 'Enter Switch Balance';
+  document.getElementById('glBal').placeholder     = _hint ? 'e.g. ' + _hint : 'Enter GL Balance';
 
   document.getElementById('resultWrap').scrollIntoView({ behavior:'smooth', block:'start' });
 }
