@@ -485,8 +485,21 @@ function openHistoryRecordModal(record) {
   modal.querySelector('.hrm-date').textContent  = record.date + ' \u00b7 ' + (record.machine_type || 'BNA');
   modal.querySelector('.hrm-ref').textContent   = record.ref || '';
   modal.querySelector('.hrm-phy').textContent   = '\u20b9' + fmt(phy);
-  modal.querySelector('.hrm-table').innerHTML   = tableHTML;
+  modal.querySelector('.hrm-table').innerHTML   = '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">' + tableHTML + '</div>';
   modal.querySelector('.hrm-traffic').innerHTML = trafficHTML;
+
+  // Show receipt image if saved in record
+  var hrmImg = modal.querySelector('.hrm-img-wrap');
+  if (hrmImg) {
+    var imgSrc = record.receiptImgUrl || (record.rawData ? '' : '');
+    if (imgSrc) {
+      hrmImg.innerHTML = '<div style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Receipt</div><img src="' + imgSrc + '" style="max-width:100%;border-radius:6px;border:1px solid var(--border)">';
+      hrmImg.style.display = 'block';
+    } else {
+      hrmImg.style.display = 'none';
+    }
+  }
+
   modal.classList.add('show');
 }
 

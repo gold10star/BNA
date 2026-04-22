@@ -42,6 +42,7 @@ async function saveRecord() {
   var record = {
     id:           Date.now(),
     savedAt:      new Date().toISOString(),
+    receiptImgUrl: window._lastReceiptImgUrl || '',
     userEmail:    currentUser.email,
     machine_type: currentMachineType,
     atm_id:       atmId,

@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     const params = new URLSearchParams();
     params.append('key', IMGBB_KEY);
     params.append('image', imageBase64);
-    params.append('expiration', '86400'); // 24 hours
+    // No expiration = permanent storage
 
     const response = await fetch('https://api.imgbb.com/1/upload', {
       method: 'POST',
