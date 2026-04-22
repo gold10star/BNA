@@ -47,6 +47,15 @@ function showToast(msg, type) {
   toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, 2800);
 }
 
+function toggleReceiptView() {
+  const wrap = document.getElementById('receiptViewWrap');
+  const btn  = document.getElementById('receiptViewBtn');
+  if (!wrap) return;
+  const isOpen = wrap.style.display !== 'none';
+  wrap.style.display = isOpen ? 'none' : 'block';
+  btn.style.color = isOpen ? 'var(--muted)' : 'var(--accent)';
+}
+
 function toggleInst() {
   const b = document.getElementById('instBody'), a = document.getElementById('instArrow');
   const o = b.classList.toggle('open'); a.classList.toggle('open', o);

@@ -12,7 +12,6 @@ function handleFile(file) {
   const maxPx      = window.innerWidth < 768 ? 800 : 1000;
   const quality    = isLarge ? SIZE_AUTO_QUALITY : 0.72;
 
-  // Show optimizing notice if large
   if (isLarge) showToast('Large image detected — auto-optimizing...', '');
 
   compressImage(file, maxPx, quality).then(({ base64, mime, width, height }) => {
@@ -23,7 +22,7 @@ function handleFile(file) {
     document.getElementById('previewName').textContent =
       file.name + (isLarge ? ' · Auto-optimized' : '');
 
-    // Orientation check: landscape image is almost always wrong for a receipt
+    // Orientation check
     const ratio = width / height;
     const orientWarn = document.getElementById('orientWarn');
     if (ratio > ORIENT_WARN_RATIO) {
@@ -37,6 +36,12 @@ function handleFile(file) {
     hide('resultWrap'); hide('resetBar'); hide('errorBox');
     document.getElementById('invalidBox').classList.remove('show');
     document.getElementById('balancesCard').classList.remove('show');
+
+    // Auto-scan after short delay (unless landscape warning shown)
+    if (ratio <= ORIENT_WARN_RATIO) {
+      showToast('Image uploaded — scanning...', '');
+      setTimeout(() => scanReceipt(), 800);
+    }
   });
 }
 
@@ -119,7 +124,11 @@ async function scanReceipt() {
     } else {
       showError('⚠ ' + (err.message || 'Unknown error'));
     }
-    document.getElementById('scanBtn').disabled = false;
+    // Show retry button
+    const scanBtn = document.getElementById('scanBtn');
+    const hint    = document.getElementById('previewHint');
+    if (scanBtn) scanBtn.style.display = 'inline-block';
+    if (hint)    hint.textContent = 'Scan failed — retake or retry.';
   }
 }
 
