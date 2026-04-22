@@ -674,7 +674,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 <script src="js/email.js"></script>
 <script src="js/main.js"></script>
 
-<!-- Sample Receipt Modal -->
+<!-- Sample Receipt Modal - single clean version -->
 <div class="modal-overlay" id="sampleReceiptModal" onclick="this.classList.remove('show')" style="align-items:center;padding:20px">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;width:100%;max-width:400px;max-height:88vh;overflow-y:auto" onclick="event.stopPropagation()">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
@@ -684,19 +684,46 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:12px;line-height:1.7">
       Upload the <strong style="color:var(--text)">Host Total Report</strong> printed by the ATM/BNA machine — not a transaction slip. It must show all 4 TYPE cassette blocks with LOADED, DISPENSED, REMAINING values.
     </div>
-    <img src="/sample_receipt.png" alt="Sample Host Total Receipt" style="width:100%;border-radius:8px;border:1px solid var(--border)">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:12px;line-height:1.8">
+
+    <!-- Inline SVG receipt mockup - no external image needed -->
+    <div style="background:#fff;color:#000;border-radius:8px;padding:14px 16px;font-family:'Courier New',monospace;font-size:11px;line-height:1.9;border:1px solid var(--border)">
+      <div style="text-align:center;font-weight:700;font-size:12px;padding-bottom:8px;border-bottom:1px solid #ccc;margin-bottom:8px">
+        SAMPLE BANK<br>
+        BRANCH NAME - CITY
+      </div>
+      <div>AID &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: CITYNAME</div>
+      <div>DATE &nbsp;&nbsp;&nbsp;&nbsp;: 18 Aug 2025 10:30</div>
+      <div>ATM ID &nbsp;&nbsp;: <strong style="color:#007700">IOBC1689</strong></div>
+      <div>REF.NO &nbsp;&nbsp;: 523016934437</div>
+      <div>CARD NO &nbsp;: 999999XXXXXX4264</div>
+      <div style="border-top:1px dashed #999;margin:8px 0"></div>
+      <div><strong>CASSETTE &nbsp; TYPE 1 &nbsp; TYPE 2</strong></div>
+      <div>LOADED &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0</div>
+      <div>DEPOSITED &nbsp;&nbsp;&nbsp;&nbsp; 0 &nbsp;&nbsp;&nbsp;&nbsp; 249</div>
+      <div>DISPENSED &nbsp;&nbsp;&nbsp;&nbsp; 0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 86</div>
+      <div>REMAINING &nbsp;&nbsp;&nbsp;&nbsp; 0 &nbsp;&nbsp;&nbsp;&nbsp; 153</div>
+      <div style="border-top:1px dashed #999;margin:8px 0"></div>
+      <div><strong>CASSETTE &nbsp; TYPE 3 &nbsp; TYPE 4</strong></div>
+      <div>LOADED &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 600 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0</div>
+      <div>DEPOSITED &nbsp;&nbsp;3228 &nbsp;&nbsp;&nbsp;&nbsp; 243</div>
+      <div>DISPENSED &nbsp;&nbsp;&nbsp;939 &nbsp;&nbsp;&nbsp;&nbsp; 154</div>
+      <div>REMAINING &nbsp;&nbsp;2889 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 89</div>
+      <div style="border-top:1px dashed #999;margin:8px 0;text-align:center;font-weight:700">*** HOST TOTAL ***</div>
+    </div>
+
+    <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:12px;line-height:2;background:var(--surface2);border-radius:8px;padding:12px;border:1px solid var(--border)">
+      <div style="color:var(--accent);font-weight:600;margin-bottom:4px">✓ What to check:</div>
       ✅ TYPE 2 = ₹100 cassette<br>
       ✅ TYPE 3 = ₹500 cassette<br>
       ✅ TYPE 4 = ₹200 cassette<br>
       ✅ TYPE 1 = Not used (always 0)<br>
-      📷 Take photo in <strong style="color:var(--text)">portrait mode</strong>, clear lighting
+      📷 Take photo in <strong style="color:var(--text)">portrait mode</strong>, clear lighting<br>
+      <div style="color:var(--danger);margin-top:6px">✗ Do NOT upload transaction slips</div>
     </div>
+
     <button onclick="document.getElementById('sampleReceiptModal').classList.remove('show')" class="btn btn-block" style="margin-top:14px">Got it</button>
   </div>
 </div>
-
-<!-- PWA Install Banner -->
 <div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--surface);border-top:1px solid var(--border);padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
   <div>
     <div style="font-size:13px;font-weight:500;margin-bottom:2px">Install App</div>
@@ -708,53 +735,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   </div>
 </div>
 
-<!-- Sample Receipt Modal -->
-<div class="modal-overlay" id="sampleReceiptModal">
-  <div class="modal" style="max-width:400px;border-radius:16px 16px 0 0;max-height:90vh;overflow-y:auto">
-    <div style="width:40px;height:4px;background:var(--border2);border-radius:4px;margin:0 auto 16px"></div>
-    <div class="modal-title" style="text-align:center;margin-bottom:4px">Host Total Receipt</div>
-    <div class="modal-sub" style="text-align:center">This is what a valid Host Total Receipt looks like</div>
-
-    <!-- Sample receipt mockup -->
-    <div style="background:#fff;color:#000;border-radius:8px;padding:16px;font-family:'Courier New',monospace;font-size:11px;line-height:1.8;margin:12px 0;border:1px solid var(--border)">
-      <div style="text-align:center;font-weight:700;font-size:12px;border-bottom:1px solid #000;padding-bottom:6px;margin-bottom:8px">SAMPLE BANK NAME<br>BRANCH NAME - CITY</div>
-      <div>AID. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: CITYNAME</div>
-      <div>DATE &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: DD MMM YYYY HH:MM</div>
-      <div>ATM ID. &nbsp;&nbsp;&nbsp;: <span style="color:#c00;font-weight:700">IOBC1234</span> &nbsp;← BNA</div>
-      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#00a;font-weight:700">IOBD1234</span> &nbsp;← ATM</div>
-      <div>REF.NO. &nbsp;&nbsp;&nbsp;: 123456789012</div>
-      <div style="border-top:1px dashed #000;margin:8px 0"></div>
-      <div style="font-weight:700">CASSETTE &nbsp; TYPE 1 &nbsp;&nbsp; TYPE 2</div>
-      <div>LOADED &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0</div>
-      <div>DEPOSITED &nbsp;&nbsp;&nbsp; 0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 249</div>
-      <div>DISPENSED &nbsp;&nbsp;&nbsp; 0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 86</div>
-      <div>REMAINING &nbsp;&nbsp;&nbsp; 0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 153</div>
-      <div style="border-top:1px dashed #000;margin:8px 0"></div>
-      <div style="font-weight:700">CASSETTE &nbsp; TYPE 3 &nbsp;&nbsp; TYPE 4</div>
-      <div>LOADED &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 600 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0</div>
-      <div>DEPOSITED &nbsp;&nbsp;3228 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 243</div>
-      <div>DISPENSED &nbsp;&nbsp; 939 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 154</div>
-      <div>REMAINING &nbsp;&nbsp;2889 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 89</div>
-      <div style="border-top:1px dashed #000;margin:8px 0;text-align:center">*** HOST TOTAL ***</div>
-    </div>
-
-    <div style="background:var(--surface2);border-radius:8px;padding:12px;font-family:var(--mono);font-size:10px;line-height:1.8;border:1px solid var(--border)">
-      <div style="color:var(--accent);font-weight:600;margin-bottom:6px">✓ What to look for:</div>
-      <div>• ATM ID starting with <span style="color:#00c896">IOBC</span> (BNA) or <span style="color:#4db8ff">IOBD</span> (ATM)</div>
-      <div>• REF.NO field</div>
-      <div>• CASSETTE TYPE 1, TYPE 2, TYPE 3, TYPE 4 blocks</div>
-      <div>• LOADED, DEPOSITED, DISPENSED, REMAINING rows</div>
-      <div style="color:var(--danger);margin-top:6px">✗ Do NOT upload:</div>
-      <div>• Transaction slips / customer receipts</div>
-      <div>• Journal reports or EJ reports</div>
-      <div>• Any other bank documents</div>
-    </div>
-
-    <div class="modal-actions" style="margin-top:14px">
-      <button class="btn btn-block" onclick="document.getElementById('sampleReceiptModal').classList.remove('show')">Got it</button>
-    </div>
-  </div>
-</div>
 <script>
 // ── Service Worker Registration ──
 if ('serviceWorker' in navigator && location.hostname !== 'www.claudeusercontent.com') {

@@ -11,7 +11,7 @@ function openEmailModal() {
   const atmId    = pendingData ? (pendingData.atm_id || '') : '';
   const machType = currentMachineType || 'BNA';
   const dateRaw  = document.getElementById('resultDate').textContent || '';
-  const datePart = dateRaw.replace(/^.*?—\s*/, '').trim();
+  const datePart = dateRaw.replace(/^.*?—\s*/, '').trim().replace(/\//g, '-');
   // Clean subject — use pipe separator, no special chars
   const subject  = 'ATM-BNA Reconciliation | ' + atmId + ' | ' + machType + ' | ' + datePart;
   document.getElementById('emailSubject').value = subject;
@@ -29,7 +29,7 @@ function buildEmailBody(receiptImgUrl) {
   const isBNA    = currentMachineType === 'BNA';
   const machType = currentMachineType || 'BNA';
   const dateRaw  = document.getElementById('resultDate').textContent || '';
-  const datePart = dateRaw.replace(/^.*?—\s*/, '').trim();
+  const datePart = dateRaw.replace(/^.*?—\s*/, '').trim().replace(/\//g, '-');
   const atmId    = pendingData ? (pendingData.atm_id || '') : '';
   const refText  = document.getElementById('resultRef').textContent;
   const emailTitle = 'ATM/BNA AUTO RECONCILIATION APP';
