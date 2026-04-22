@@ -500,9 +500,16 @@ function openHistoryRecordModal(record) {
   // Show receipt image if saved in record
   var hrmImg = modal.querySelector('.hrm-img-wrap');
   if (hrmImg) {
-    var imgSrc = record.receiptImgUrl || (record.rawData ? '' : '');
+    var imgSrc = record.receiptImgUrl || '';
     if (imgSrc) {
-      hrmImg.innerHTML = '<div style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Receipt</div><img src="' + imgSrc + '" style="max-width:100%;border-radius:6px;border:1px solid var(--border)">';
+      hrmImg.innerHTML =
+        '<button onclick="var w=this.nextElementSibling;var open=w.style.display!==\'none\';w.style.display=open?\'none\':\'block\';this.style.color=open?\'var(--muted)\':\'var(--accent)\'" ' +
+        'style="background:none;border:none;color:var(--muted);font-family:var(--mono);font-size:10px;cursor:pointer;display:flex;align-items:center;gap:6px;letter-spacing:0.04em;margin-bottom:6px">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' +
+        'VIEW UPLOADED RECEIPT</button>' +
+        '<div style="display:none">' +
+        '<img src="' + imgSrc + '" style="max-width:100%;border-radius:6px;border:1px solid var(--border)">' +
+        '</div>';
       hrmImg.style.display = 'block';
     } else {
       hrmImg.style.display = 'none';

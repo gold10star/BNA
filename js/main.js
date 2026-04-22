@@ -81,6 +81,13 @@ function resetAll() {
   document.getElementById('fileInput').value = '';
   const fc = document.getElementById('fileInputCamera');
   if (fc) fc.value = '';
+  // Reset receipt view
+  const rvw = document.getElementById('receiptViewWrap');
+  const rvb = document.getElementById('receiptViewBtn');
+  if (rvw) { rvw.style.display = 'none'; }
+  if (rvb) { rvb.style.color = 'var(--muted)'; }
+  const pi = document.getElementById('previewImg');
+  if (pi) pi.src = '';
   document.getElementById('uploadZone').style.display = '';
   document.getElementById('previewRow').classList.remove('show');
   ['switchBal','glBal'].forEach(id => document.getElementById(id).value = '');
