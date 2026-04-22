@@ -497,12 +497,10 @@ function openHistoryRecordModal(record) {
   modal.querySelector('.hrm-table').innerHTML   = '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">' + tableHTML + '</div>';
   modal.querySelector('.hrm-traffic').innerHTML = trafficHTML;
 
-  // Show receipt image if saved in record
+  // Receipt image at bottom
   var hrmImg = modal.querySelector('.hrm-img-wrap');
   if (hrmImg) {
-    // Use imgBB URL if available, otherwise use current session image as fallback
     var imgSrc = record.receiptImgUrl || '';
-    // Also check if this is the currently active record matching session
     if (!imgSrc && imageBase64 && pendingData &&
         pendingData.atm_id === record.atm_id &&
         pendingData.ref_no === record.ref_no) {
@@ -510,13 +508,14 @@ function openHistoryRecordModal(record) {
     }
     if (imgSrc) {
       hrmImg.innerHTML =
-        '<button onclick="var w=this.nextElementSibling;var open=w.style.display!==\'none\';w.style.display=open?\'none\':\'block\';this.style.color=open?\'var(--muted)\':\'var(--accent)\'" ' +
-        'style="background:none;border:none;color:var(--muted);font-family:var(--mono);font-size:10px;cursor:pointer;display:flex;align-items:center;gap:6px;letter-spacing:0.04em;margin-bottom:6px;width:100%">' +
+        '<div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">' +
+        '<button onclick="var w=this.nextElementSibling;var open=w.style.display!==\'none\';w.style.display=open?\'none\':\'block\';this.style.background=open?\'var(--surface2)\':\'var(--accent-dim)\';this.style.color=open?\'var(--accent)\':\'var(--accent)\';this.style.borderColor=open?\'var(--border2)\':\'var(--accent)\'" ' +
+        'style="background:var(--surface2);border:1px solid var(--border2);color:var(--accent);font-family:var(--mono);font-size:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;letter-spacing:0.06em;padding:8px 14px;border-radius:6px;width:100%;justify-content:center">' +
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' +
-        'VIEW UPLOADED RECEIPT</button>' +
-        '<div style="display:none;margin-bottom:12px">' +
-        '<img src="' + imgSrc + '" style="max-width:100%;border-radius:6px;border:1px solid var(--border)">' +
-        '</div>';
+        '🧾 &nbsp;VIEW UPLOADED RECEIPT</button>' +
+        '<div style="display:none;margin-top:10px">' +
+        '<img src="' + imgSrc + '" style="max-width:100%;border-radius:8px;border:1px solid var(--border)">' +
+        '</div></div>';
       hrmImg.style.display = 'block';
     } else {
       hrmImg.style.display = 'none';
