@@ -52,8 +52,9 @@ function toggleReceiptView() {
   const btn  = document.getElementById('receiptViewBtn');
   if (!wrap) return;
   const isOpen = wrap.style.display !== 'none';
-  wrap.style.display = isOpen ? 'none' : 'block';
-  btn.style.color = isOpen ? 'var(--muted)' : 'var(--accent)';
+  wrap.style.display   = isOpen ? 'none' : 'block';
+  btn.style.background = isOpen ? 'var(--surface2)' : 'var(--accent-dim)';
+  btn.style.borderColor= isOpen ? 'var(--border2)'  : 'var(--accent)';
 }
 
 function toggleInst() {
